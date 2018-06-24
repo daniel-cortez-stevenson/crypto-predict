@@ -9,6 +9,8 @@ ADD requirements.txt /app/requirements.txt
 RUN pip install -U pip setuptools wheel
 RUN pip install -r requirements.txt
 
+ADD models /app/models
+
 EXPOSE 5000
 
 CMD ["python", "/app/src/app.py"]
