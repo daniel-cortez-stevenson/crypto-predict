@@ -24,6 +24,7 @@ endif
 requirements: test_environment
 	pip install -U pip setuptools wheel
 	pip install -r requirements.txt
+	pip install -U https://github.com/pallets/flask/archive/master.tar.gz
 
 ## Make Dataset
 data: requirements
