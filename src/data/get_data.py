@@ -3,11 +3,13 @@ import numpy as np
 import pandas as pd
 import datetime
 
-def retrieve_hourly_data(coin, to_time=(np.datetime64(datetime.datetime.now()).astype('uint64') / 1e6).astype('uint32')):
+def retrieve_hourly_data(coin,
+                         to_time=(np.datetime64(datetime.datetime.now()).astype('uint64') / 1e6).astype('uint32'),
+                         limit=2000):
     params = {
         'fsym': coin,
         'tsym': 'USD',
-        'limit': 2000,
+        'limit': limit,
         'toTs': to_time
     }
     url = "https://min-api.cryptocompare.com/data/histohour"
@@ -18,8 +20,18 @@ def retrieve_hourly_data(coin, to_time=(np.datetime64(datetime.datetime.now()).a
 def retrieve_all_data(coin, num_hours):
     df = pd.DataFrame()
     end_time = (np.datetime64(datetime.datetime.now()).astype('uint64') / 1e6).astype('uint32')
-    for i in range(np.int(num_hours / 2000)):
-        r = retrieve_hourly_data(coin, end_time)
+
+    limit = 0
+
+    if num_hours < 2000:
+        num_calls = 1
+        limit = num_hours
+    else:
+        num_calls = np.int(num_hours / limit)
+        limit = 2000
+
+    for i in range(num_calls):
+        r = retrieve_hourly_data(coin, end_time, limit)
         end_time = r.json()['TimeFrom']
         r_data = r.json()['Data']
         this_df = pd.DataFrame()
