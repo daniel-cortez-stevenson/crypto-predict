@@ -20,11 +20,12 @@ endif
 # COMMANDS                                                                      #
 #################################################################################
 
-## Install Python Dependencies
+## Install Python Dependencies and Jupyter ipykernel
 requirements: test_environment
 	pip install -U pip setuptools wheel
 	pip install -r requirements.txt
-	pip install -U https://github.com/pallets/flask/archive/master.tar.gz
+	python -m ipykernel install --user --name go-mint-datasci-challenge --display-name "Python (go-mint-datasci-challenge)"
+
 
 ## Make Dataset
 data: requirements
