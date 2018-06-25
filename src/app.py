@@ -32,7 +32,7 @@ def get_prediction():
 
     # Then you would match coins to a model path using a dict.
     # Loading this model here rather than at app start because scalability is not an issue (yet!)
-    model = load_model.load_model_from_path('models/linear_model_btc.pkl')
+    model = load_model.load_from_pickle(path='models/linear_model_btc.pkl')
 
     data = pd.DataFrame()
     # I would have the app subscribe to the hourly data from cryptocompare and then query the cryptocompare API only hourly
