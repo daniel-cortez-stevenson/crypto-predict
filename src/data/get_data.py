@@ -27,8 +27,9 @@ def retrieve_all_data(coin, num_hours):
         num_calls = 1
         limit = num_hours
     else:
-        num_calls = np.int(num_hours / limit)
         limit = 2000
+        num_calls = np.int(num_hours / limit)
+
 
     for i in range(num_calls):
         r = retrieve_hourly_data(coin, end_time, limit)
