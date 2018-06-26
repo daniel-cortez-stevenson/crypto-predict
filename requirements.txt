@@ -1,13 +1,13 @@
 # local package
 -e .
 
-# pip freeze output
+# modified gitpip freeze output
 absl-py>=0.2.2
 appnope>=0.1.0
 asn1crypto>=0.24.0
 astor>=0.6.2
 backcall>=0.1.0
-bleach>=1.5.0
+bleach==1.5.0
 certifi>=2018.4.16
 cffi>=1.11.5
 chardet>=3.0.4
@@ -19,7 +19,7 @@ Flask>=1.0.2
 gast>=0.2.0
 grpcio>=1.12.1
 h5py>=2.8.0
-html5lib>=0.9999999
+html5lib==0.9999999
 idna>=2.7
 ipykernel>=4.8.2
 ipython>=6.4.0
@@ -29,26 +29,25 @@ jedi>=0.12.0
 Jinja2>=2.10
 jupyter-client>=5.2.3
 jupyter-core>=4.4.0
-Keras>=2.1.6
+Keras>=2.2.0
+Keras-Applications>=1.0.2
+Keras-Preprocessing>=1.0.1
 kiwisolver>=1.0.1
 Mako>=1.0.7
 Markdown>=2.6.11
 MarkupSafe>=1.0
 matplotlib>=2.2.2
-##mkl_fft>=1.0.2
-##mkl-random>=1.0.1
 numpy>=1.14.5
 pandas>=0.23.1
 parso>=0.2.1
 patsy>=0.5.0
 pexpect>=4.6.0
 pickleshare>=0.7.4
-prompt-toolkit<2.0.0
-protobuf>=3.5.2
+prompt-toolkit<2.0.0,>=1.0.15
+protobuf>=3.6.0
 ptyprocess>=0.6.0
 pycparser>=2.18
 Pygments>=2.2.0
-##pygpu>=0.7.6
 pyOpenSSL>=18.0.0
 pyparsing>=2.2.0
 PySocks>=1.6.8
@@ -64,7 +63,7 @@ seaborn>=0.8.1
 simplegeneric>=0.8.1
 six>=1.11.0
 statsmodels>=0.9.0
-tensorboard>=1.8.0
+tensorboard<1.9.0,>=1.8.0
 tensorflow>=1.8.0
 termcolor>=1.1.0
 Theano>=1.0.2
