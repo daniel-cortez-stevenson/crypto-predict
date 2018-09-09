@@ -12,7 +12,7 @@ def main():
     logger = logging.getLogger(__name__)
     logger.info('making final data set from raw data')
 
-    data = get_data.retrieve_all_data('BTC', 46000)
+    data = get_data.retrieve_all_data(coin='BTC', num_hours=46000, comparison_symbol='USD')
 
     data.to_csv(project_path + '/data/raw/data.csv')
 
