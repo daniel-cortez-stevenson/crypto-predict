@@ -1,11 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
-def prep_df(df):
-    df.sort_values('time', inplace=True)
-    df.drop(['index', 'volumeto'], axis=1, inplace=True)
-    df = df[['volumefrom','open','high','close','low','time']]
-    return df
 
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
     """
