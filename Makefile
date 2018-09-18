@@ -24,6 +24,7 @@ endif
 requirements: test_environment
 	pip install -U pip setuptools wheel
 	pip install -r requirements.txt
+	pip install -e .
 	@echo ">>> Creating Jupyter Notebook kernel -> Python ($(PROJECT_NAME))"
 	$(PYTHON_INTERPRETER) -m ipykernel install --user --name $(PROJECT_NAME) --display-name "Python ($(PROJECT_NAME))"
 
