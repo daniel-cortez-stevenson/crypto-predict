@@ -77,10 +77,12 @@ def save_preprocessing_output(X_train, X_test, y_train, y_test, sym, Tx, Ty, max
     y_test.to_csv('../data/processed/y_test_{}_tx{}_ty{}_flag{}.csv'.format(sym, Tx, Ty, max_lag),index=False)
 
 
-def make_features(input_df, train_on_x_last_hours, target_col, moving_average_lags) -> pd.DataFrame:
+def make_features(input_df, target_col, moving_average_lags, train_on_x_last_hours=None) -> pd.DataFrame:
     df=input_df.copy()
-    return df[['open', 'high', 'close', 'low', 'volumeto', 'volumefrom']] \
-        .pipe(truncate, train_on_x_last_hours) \
+    df=df[['open', 'high', 'close', 'low', 'volumeto', 'volumefrom']]
+    if train_on_x_last_hours:
+        df = df.pipe(truncate, train_on_x_last_hours)
+    return df\
         .pipe(calc_target, target_col) \
         .pipe(calc_volume_ma, moving_average_lags) \
         .dropna(how='any', axis=0)
