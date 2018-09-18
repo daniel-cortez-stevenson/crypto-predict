@@ -1,26 +1,24 @@
 crypto-predict
 ==============================
-==============================
 
-This project is a easily reproducible python/docker project to predict the price of bitcoin at the next hours using OHLCV data for bitcoin from the last 144 hours.
+This project is a easily reproducible python/flask/docker project to predict the price of BTC and ETH at the next hour using OHLCV data for each cryptocurrency from the last 72 hours (+72 hours for volume moving average calculation).
 
-Commands
+***Note: Anaconda is recommended to manage the project environment. Environment creation without Anaconda is untested***
+
+Make Commands
 ========
 
 The Makefile contains the central entry points for common tasks related to this project.
 
-Run the following to create the project python environment and get the data from cryptocompare API.
+Run the following to create the project python environment and get the training data from Cryptocompare API.
 
-With Anaconda installed ...
-*from the top directory*
+*from the top project directory*
 ```bash
 make create_environment
 source activate crypto-predict
 make requirements
 make data
 ```
-Without Anaconda installed ...
-You can figure it out - you're an advanced python user!
 
 Docker Usage
 =========
@@ -29,7 +27,7 @@ Docker Usage
 docker build -t crypto_predict_api .
 docker run -p 5000:5000 crypto_predict_api
 ```
-Now find your prediction at localhost:5000/predict?coin=BTC
+Now find your prediction at localhost:5000/predict?coin={ETH or BTC}
 
 Future Directions
 =================
@@ -42,7 +40,7 @@ Project Organization
 ------------
 
     ├── LICENSE
-    ├── Makefile           <- Makefile with commands like `make data` or `make train`
+    ├── Makefile           <- Makefile with commands like `make data`
     ├── README.md          <- The top-level README for developers using this project.
     ├── data
     │   ├── external       <- Data from third party sources.
@@ -52,9 +50,8 @@ Project Organization
     │
     ├── models             <- Trained and serialized models, model predictions, or model summaries
     │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `1.0-jqp-initial-data-exploration`.
+    ├── notebooks          <- Jupyter notebooks.
+    │                                    
     │
     ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
     │
@@ -69,20 +66,18 @@ Project Organization
     │   ├── __init__.py    <- Makes src a Python module
     │   │
     │   ├── data           <- Scripts to download or generate data
-    │   │   ├── make_dataset.py
-    |   |   └── get_data.py
+    │   │  
+    |   |   
     │   │
     │   ├── features       <- Scripts to turn raw data into features for modeling
-    │   │   └── build_features.py
+    │   │  
     │   │
     │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
-    │   │   ├── predict_model.py
-    │   │   ├── train_model.py
-    |   │   └── load_model.py
+    │   │                       predictions
+    │   │  
     │   │
     │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │   │   └── visualize.py
+    │   │   
     │   │
     │   └── app.py <- the Flask code used to serve the prediction API
     │ 
