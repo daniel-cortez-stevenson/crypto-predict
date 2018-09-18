@@ -1,4 +1,4 @@
-go-mint-datasci-challenge
+crypto-predict
 ==============================
 ==============================
 
