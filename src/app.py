@@ -32,33 +32,22 @@ def get_prediction():
 
     # Then you would match coins to a model path using a dict.
     # Loading this model here rather than at app start because scalability is not an issue (yet!)
-    model = load_model.load_from_pickle(path='models/linear_model_btc.pkl')
+    model = load_model.load_from_pickle(path='models/xgboost_model_btc.pkl')
 
-    data = pd.DataFrame()
+    Tx=72
+    FEATURE_WINDOW=72
     # I would have the app subscribe to the hourly data from cryptocompare and then query the cryptocompare API only hourly
-    try :
-        data = get_data.retrieve_all_data(coin, 24)
-    except:
-        abort(404)
+    data = get_data.retrieve_all_data(coin, Tx+FEATURE_WINDOW-1)
 
-    data = build_features.prep_df(data)
+    last_close = data['close'].iloc[-1]
+    last_time = data['timestamp'].iloc[-1]
+    predict_times = [last_time + pd.Timedelta(hours=1*(ix+1)) for ix in range(1)]
 
-    current_time = list(data['time'])[-1]
-    predict_times = [current_time + 3600 * ix for ix, x in enumerate(range(6))]
-    predict_times = pd.to_datetime(predict_times, unit='s')
-
-    data = build_features.series_to_supervised(data, n_in=24, n_out=0, dropnan=True)
-
+    data = build_features.make_features(data)
+    data = build_features.series_to_supervised(data, n_in=72, n_out=0, dropnan=True)
     prediction = model.predict(data)
-
     # Not a UI guy so here ya go
-    return jsonify({str(predict_times[0]): prediction[0][0],
-                    str(predict_times[1]): prediction[0][1],
-                    str(predict_times[2]): prediction[0][2],
-                    str(predict_times[3]): prediction[0][3],
-                    str(predict_times[4]): prediction[0][4],
-                    str(predict_times[5]): prediction[0][5]
-                    })
+    return jsonify({'{}+00:00'.format(predict_times[0]): '{} USD'.format(last_close+prediction[0]/100*last_close)})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
