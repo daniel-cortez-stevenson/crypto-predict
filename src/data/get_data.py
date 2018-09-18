@@ -34,6 +34,7 @@ def retrieve_all_data(coin,
     if num_hours <= 2000:
         num_calls = 1
         limit = num_hours
+        last_limit=limit
     else:
         limit = 2000
         num_calls = np.int(np.ceil(num_hours / limit))

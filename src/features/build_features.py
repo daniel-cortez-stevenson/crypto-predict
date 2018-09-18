@@ -35,3 +35,15 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
         agg.dropna(inplace=True)
     return agg
 
+
+def make_features(input_data: pd.DataFrame) -> pd.DataFrame:
+    df=input_data.copy()
+    df = df[['timestamp', 'open', 'high', 'close', 'low', 'volumeto', 'volumefrom']]
+    df['percent_change'] = df.close.pct_change() * 100
+    MAS = [6, 12, 24, 48, 72]
+    for MA in MAS:
+        df['vt_ma' + str(MA)] = df.volumeto.rolling(MA).mean()
+        df['vf_ma' + str(MA)] = df.volumefrom.rolling(MA).mean()
+    df = df.drop(['timestamp'], axis=1) \
+        .dropna(how='any', axis=0)
+    return df
