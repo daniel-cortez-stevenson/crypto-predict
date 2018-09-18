@@ -1,10 +1,8 @@
 go-mint-datasci-challenge
 ==============================
-
-A wonderful data science challenge!
 ==============================
 
-This project is a easily reproducible python/docker project to predict the price of bitcoin over the next 6 hours using OHLCV data for bitcoin from the last 24 hours. The model uses data from the past ~36000 hours (4.11 years) to train.
+This project is a easily reproducible python/docker project to predict the price of bitcoin at the next hours using OHLCV data for bitcoin from the last 144 hours.
 
 Commands
 ========
@@ -17,13 +15,12 @@ With Anaconda installed ...
 *from the top directory*
 ```bash
 make create_environment
-source activate go-mint-datasci-challenge
+source activate crypto-predict
 make requirements
 make data
 ```
 Without Anaconda installed ...
 You can figure it out - you're an advanced python user!
-
 
 Docker Usage
 =========
@@ -32,14 +29,14 @@ Docker Usage
 docker build -t crypto_predict_api .
 docker run -p 5000:5000 crypto_predict_api
 ```
+Now find your prediction at localhost:5000/predict?coin=BTC
 
 Future Directions
 =================
-- Use a model based on the GARCH Process to get more accurate price forecasting results
-- Visualize price predictions in a web app based on the developed predicton api
-- Use unstructured text data to calculate sentiment or other metrics to use in prediciton
+- More coins!
+- Visualize price predictions in a web app based on the developed prediction api
+- Use unstructured text data to calculate sentiment or other metrics to use in prediction
 - Use transfer learning from financial markets and other crypto coins to enhance the RNN model
-- Look into other ML models (SVR, decision trees, etc.) for price prediciton.
 
 Project Organization
 ------------
