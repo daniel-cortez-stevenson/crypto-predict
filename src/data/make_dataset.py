@@ -12,9 +12,11 @@ def main():
     logger = logging.getLogger(__name__)
     logger.info('making final data set from raw data')
 
-    data = get_data.retrieve_all_data(coin='BTC', num_hours=46000, comparison_symbol='USD')
+    coins=['BTC', 'ETH']
 
-    data.to_csv(project_path + '/data/raw/data.csv')
+    for coin in coins:
+        coin_data = get_data.retrieve_all_data(coin=coin, num_hours=46000, comparison_symbol='USD')
+        coin_data.to_csv(project_path + '/data/raw/{}.csv'.format(coin))
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
