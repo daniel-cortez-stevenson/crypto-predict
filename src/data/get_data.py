@@ -8,16 +8,14 @@ def retrieve_hourly_data(coin,
                          comparison_symbol='USD',
                          to_time=(np.datetime64(datetime.datetime.now()).astype('uint64') / 1e6).astype('uint32'),
                          limit=2000,
-                         exchange=''):
+                         exchange='CCCAGG'):
     params = {
         'fsym': coin.upper(),
         'tsym': comparison_symbol.upper(),
         'limit': limit,
-        'toTs': to_time
+        'toTs': to_time,
+        'e':exchange
     }
-
-    if exchange:
-        params['exchange'] = exchange
 
     url = "https://min-api.cryptocompare.com/data/histohour"
     r = requests.get(url, params=params)
@@ -27,7 +25,7 @@ def retrieve_hourly_data(coin,
 def retrieve_all_data(coin,
                       num_hours,
                       comparison_symbol='USD',
-                      exchange=''):
+                      exchange='CCCAGG'):
     df = pd.DataFrame()
     end_time = (np.datetime64(datetime.datetime.now()).astype('uint64') / 1e6).astype('uint32')
 
