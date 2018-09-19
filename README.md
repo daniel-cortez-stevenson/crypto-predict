@@ -1,5 +1,6 @@
 crypto-predict
 ==============================
+[![Build Status](https://travis-ci.com/daniel-cortez-stevenson/crypto-predict.svg?branch=master)](https://travis-ci.com/daniel-cortez-stevenson/crypto-predict)
 
 This project is a easily reproducible python/flask/docker project to predict the price of BTC and ETH at the next hour using OHLCV data for each cryptocurrency from the last 72 hours (+72 hours for volume moving average calculation).
 
