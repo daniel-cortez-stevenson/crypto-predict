@@ -25,9 +25,9 @@ def retrieve_hourly_data(coin,
 def retrieve_all_data(coin,
                       num_hours,
                       comparison_symbol='USD',
-                      exchange='CCCAGG'):
+                      exchange='CCCAGG',
+                      end_time=(np.datetime64(datetime.datetime.now()).astype('uint64') / 1e6).astype('uint32')):
     df = pd.DataFrame()
-    end_time = (np.datetime64(datetime.datetime.now()).astype('uint64') / 1e6).astype('uint32')
 
     if num_hours <= 2000:
         num_calls = 1
