@@ -1,6 +1,8 @@
 #!flask/bin/python
 from flask import Flask, jsonify, abort, request, Response
 from src.CryptoPredict.SavedModel import SavedModel
+from src.CryptoPredict.Preprocesser import Preprocesser
+from src.data.get_data import retrieve_all_data
 
 import pandas as pd
 import os
@@ -25,16 +27,27 @@ def get_prediction():
         abort(404)
         print(e)
 
-    model = SavedModel(coin=coin, Tx=72, Ty=1, feature_window=72)
-    model.load()
-    prediction = model.predict()
+    Tx=72
+    Ty=1
+    feature_window=72
+    target='close'
 
-    last_close = model.data['close'].iloc[-1]
-    last_time = model.data['timestamp'].iloc[-1]
+    data = retrieve_all_data(coin, Tx + feature_window - 1)
+
+    preprocessor = Preprocesser(data, target, Tx=Tx, Ty=Ty, moving_averages=[6, 12, 24, 48, 72],
+                                name='CryptoPredict_{}_tx{}_ty{}_flag{}'.format(coin, Tx, Ty, feature_window))
+    X = preprocessor.preprocess_predict()
+
+    model = SavedModel(coin=coin, Tx=Tx, Ty=Ty, feature_window=feature_window)
+    model.load()
+
+    prediction = model.predict(X)
+
+    last_target = preprocessor.data[target].iloc[-1]
+    last_time = preprocessor.data['timestamp'].iloc[-1]
     predict_times = [last_time + pd.Timedelta(hours=1*(ix+1)) for ix in range(model.Ty)]
 
-    # Not a UI guy so here ya go
-    return jsonify({'{}+00:00'.format(predict_times[0]): '{} USD'.format(last_close+prediction[0]/100*last_close)})
+    return jsonify({'{}+00:00'.format(predict_times[0]): '{} USD'.format(last_target+prediction[0]/100*last_target)})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -23,9 +23,7 @@ class SavedModel(object):
 
     @my_logger
     @my_timer
-    def predict(self):
-        self.data = retrieve_all_data(self.coin, self.Tx + self.feature_window - 1)
-        self.fe = build_features.make_features(self.data, 'close', [6,12,24,48,72])
-        self.X = build_features.series_to_supervised(self.fe, n_in=self.Tx, n_out=0, dropnan=True)
+    def predict(self, X):
+        self.X = X
         self.prediction = self.model.predict(self.X)
         return self.prediction
