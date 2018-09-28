@@ -1,8 +1,7 @@
 #!flask/bin/python
 from flask import Flask, jsonify, abort, request, Response
-from src.data import get_data
-from src.models import load_model
-from src.features import build_features
+from src.CryptoPredict.SavedModel import SavedModel
+
 import pandas as pd
 import os
 
@@ -26,28 +25,14 @@ def get_prediction():
         abort(404)
         print(e)
 
+    model = SavedModel(coin=coin, Tx=72, Ty=1, feature_window=72)
+    model.load()
+    prediction = model.predict()
 
-    # Could alter this to gerneralize the function
-    model_format='models/xgboost_{}_tx72_ty1_flag72.pkl'
-    if os.path.exists(model_format.format(coin)):
-        model = load_model.load_from_pickle(path=model_format.format(coin))
-    else:
-        abort(404)
+    last_close = model.data['close'].iloc[-1]
+    last_time = model.data['timestamp'].iloc[-1]
+    predict_times = [last_time + pd.Timedelta(hours=1*(ix+1)) for ix in range(model.Ty)]
 
-    # Could alter this to gerneralize the function
-    Tx=72
-    FEATURE_WINDOW=72
-
-    # I would have the app subscribe to the hourly data from cryptocompare and then query the cryptocompare API only hourly
-    data = get_data.retrieve_all_data(coin, Tx+FEATURE_WINDOW-1)
-
-    last_close = data['close'].iloc[-1]
-    last_time = data['timestamp'].iloc[-1]
-    predict_times = [last_time + pd.Timedelta(hours=1*(ix+1)) for ix in range(1)]
-
-    data = build_features.make_features(data, 'close', [6,12,24,48,72])
-    data = build_features.series_to_supervised(data, n_in=Tx, n_out=0, dropnan=True)
-    prediction = model.predict(data)
     # Not a UI guy so here ya go
     return jsonify({'{}+00:00'.format(predict_times[0]): '{} USD'.format(last_close+prediction[0]/100*last_close)})
 
