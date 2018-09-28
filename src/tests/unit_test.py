@@ -4,6 +4,7 @@ import datetime
 from src.data.get_data import retrieve_all_data
 from src.features.build_features import *
 from src.CryptoPredict.Model import Model
+from xgboost import XGBRegressor
 
 class TestInput(unittest.TestCase):
 
@@ -19,6 +20,7 @@ class TestInput(unittest.TestCase):
 
     def setUp(self):
         print('setUp')
+        np.random.seed(31337)
 
         SYM = 'ETH'
         LAST_N_HOURS = 16000
@@ -42,10 +44,11 @@ class TestInput(unittest.TestCase):
 
         self.X_train, self.X_test, self.y_train, self.y_test = ttsplit_and_trim(X, y, TEST_SIZE, N_FEATURES, Ty)
 
-        self.train_mae = 0.8339931222304684
-        self.train_rmse = 1.2384700065887169
-        self.test_mae = 0.6743845487304544
-        self.test_rmse = 1.0307934086762733
+        self.train_mae = 0.8968620419351427
+        self.train_rmse = 1.4206723934489915
+        self.test_mae = 0.6681529049518523
+        self.test_rmse = 1.0195120681618908
+
 
     def tearDown(self):
         # print('tearDown')
@@ -53,14 +56,36 @@ class TestInput(unittest.TestCase):
 
     def test_fit(self):
         np.random.seed(31337)
-        self.ta = Model(self.X_train, self.y_train, self.X_test, self.y_test)
-        self.assertEqual(self.ta.fit(), [self.train_rmse, self.train_mae])
+        self.ta = Model(XGBRegressor(), 'xgboost_regressor')
+        self.parameters = {
+            'objective': 'reg:linear',
+            'learning_rate': .07,
+            'max_depth': 10,
+            'min_child_weight': 4,
+            'silent': 1,
+            'subsample': 0.7,
+            'colsample_bytree': 0.7,
+            'n_estimators': 20
+        }
+        self.ta.set_parameters(self.parameters)
+        self.assertEqual(self.ta.fit(self.X_train, self.y_train), [self.train_rmse, self.train_mae])
 
     def test_predict(self):
         np.random.seed(31337)
-        self.ta = Model(self.X_train, self.y_train, self.X_test, self.y_test)
-        self.ta.fit()
-        self.assertEqual(self.ta.predict(), [self.test_rmse, self.test_mae])
+        self.ta = Model(XGBRegressor(), 'xgboost_regressor')
+        self.parameters = {
+            'objective': 'reg:linear',
+            'learning_rate': .07,
+            'max_depth': 10,
+            'min_child_weight': 4,
+            'silent': 1,
+            'subsample': 0.7,
+            'colsample_bytree': 0.7,
+            'n_estimators': 20
+        }
+        self.ta.set_parameters(self.parameters)
+        self.ta.fit(self.X_train, self.y_train)
+        self.assertEqual(self.ta.predict(self.X_test, self.y_test), [self.test_rmse, self.test_mae])
 
 
 if __name__ == '__main__':

@@ -3,9 +3,12 @@ import datetime
 from src.data.get_data import retrieve_all_data
 from src.features.build_features import *
 from src.CryptoPredict.Model import Model
+from xgboost import XGBRegressor
 
 # The solution
 if __name__ == '__main__':
+    np.random.seed(31337)
+
     SYM = 'ETH'
     LAST_N_HOURS = 16000
     MOVING_AVERAGE_LAGS = [6, 12, 24, 48, 72]
@@ -29,14 +32,27 @@ if __name__ == '__main__':
 
     X_train, X_test, y_train, y_test = ttsplit_and_trim(X, y, TEST_SIZE, N_FEATURES, Ty)
 
-    np.random.seed(31337)
-    ta = Model(X_train, y_train, X_test, y_test)
-    train_scores = ta.fit()
+    ta = Model(XGBRegressor(), 'xgboost_regressor')
+
+    parameters = {
+        'objective': 'reg:linear',
+        'learning_rate': .07,
+        'max_depth': 10,
+        'min_child_weight': 4,
+        'silent': 1,
+        'subsample': 0.7,
+        'colsample_bytree': 0.7,
+        'n_estimators': 20
+    }
+
+    ta.set_parameters(parameters)
+
+    train_scores = ta.fit(X_train, y_train)
     print()
     print('Train RMSE:', train_scores[0], '\n')
     print("Train MAE:\n{}\n".format(train_scores[1]))
 
-    test_scores = ta.predict()
+    test_scores = ta.predict(X_test, y_test)
     print()
     print('Test RMSE:', test_scores[0], '\n')
     print("Test MAE:\n{}\n".format(test_scores[1]))
