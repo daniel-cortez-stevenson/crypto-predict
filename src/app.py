@@ -36,7 +36,7 @@ def get_prediction():
 
     preprocessor = Preprocesser(data, target, Tx=Tx, Ty=Ty, moving_averages=[6, 12, 24, 48, 72],
                                 name='CryptoPredict_{}_tx{}_ty{}_flag{}'.format(coin, Tx, Ty, feature_window))
-    X = preprocessor.preprocess_predict()
+    X, _ = preprocessor.preprocess_predict()
 
     model = SavedModel(coin=coin, Tx=Tx, Ty=Ty, feature_window=feature_window)
     model.load()

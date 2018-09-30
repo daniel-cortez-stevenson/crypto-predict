@@ -3,6 +3,8 @@ import datetime
 from src.data.get_data import retrieve_all_data
 from src.features.build_features import *
 from src.CryptoPredict.Model import Model
+from src.CryptoPredict.Preprocesser import Preprocesser
+
 from xgboost import XGBRegressor
 
 # The solution
@@ -21,16 +23,19 @@ if __name__ == '__main__':
                              end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype(
                                  'uint32'))
 
-    df = data[['open', 'high', 'close', 'low', 'volumeto', 'volumefrom']] \
-        .pipe(calc_target, TARGET) \
-        .pipe(calc_volume_ma, MOVING_AVERAGE_LAGS) \
-        .dropna(how='any', axis=0)
+    preprocessor = Preprocesser(data, TARGET, Tx, Ty, MOVING_AVERAGE_LAGS, name='Unit_Test')
+    X, y, n_features = preprocessor.preprocess_train()
 
-    N_FEATURES = len(df.columns)
+    print('Feature Matrix X Sample: {}'.format(X.sample(1, random_state=0).values[0][0]))
+    print('Target Values y Sample: {}'.format(y.sample(1, random_state=0).values[0][0]))
 
-    X, y = data_to_supervised(df, Tx, Ty)
 
-    X_train, X_test, y_train, y_test = ttsplit_and_trim(X, y, TEST_SIZE, N_FEATURES, Ty)
+    X_train, X_test, y_train, y_test = ttsplit_and_trim(X, y, TEST_SIZE, n_features, Ty)
+
+    print('Train Feature Matrix X Sample: {}'.format(X_train.sample(1, random_state=0).values[0][0]))
+    print('Train Target Values y Sample: {}'.format(y_train.sample(1, random_state=0).values[0][0]))
+    print('Test Feature Matrix X Sample: {}'.format(X_test.sample(1, random_state=0).values[0][0]))
+    print('Test Target Values y Sample: {}'.format(y_test.sample(1, random_state=0).values[0][0]))
 
     ta = Model(XGBRegressor(), 'xgboost_regressor')
 
@@ -48,11 +53,9 @@ if __name__ == '__main__':
     ta.set_parameters(parameters)
 
     train_scores = ta.fit(X_train, y_train)
-    print()
-    print('Train RMSE:', train_scores[0], '\n')
-    print("Train MAE:\n{}\n".format(train_scores[1]))
+    print('Train RMSE: {}'.format(train_scores[0]))
+    print("Train MAE: {}\n".format(train_scores[1]))
 
     test_scores = ta.predict(X_test, y_test)
-    print()
-    print('Test RMSE:', test_scores[0], '\n')
-    print("Test MAE:\n{}\n".format(test_scores[1]))
+    print('Test RMSE: {}'.format(test_scores[0]))
+    print("Test MAE: {}\n".format(test_scores[1]))
