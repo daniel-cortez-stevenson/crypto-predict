@@ -46,7 +46,7 @@ def get_prediction():
 
     last_target = preprocessor.data[target].iloc[-1]
     last_time = preprocessor.data['timestamp'].iloc[-1]
-    predict_times = [last_time + pd.Timedelta(hours=1*(ix+1)) for ix in range(model.Ty)]
+    predict_times = [last_time + pd.Timedelta(hours=1*(ix+1)) for ix in range(Ty)]
 
     return jsonify({'{}+00:00'.format(predict_times[0]): '{} USD'.format(last_target+prediction[0]/100*last_target)})
 
