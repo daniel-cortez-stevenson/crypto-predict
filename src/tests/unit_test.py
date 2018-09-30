@@ -62,8 +62,8 @@ class TestInput(unittest.TestCase):
 
         self.train_mae = 0.8968620419351427
         self.train_rmse = 1.4206723934489915
-        self.test_mae = 0.6681529049518523
-        self.test_rmse = 1.0195120681618908
+        # self.test_mae = 0.6681529049518523
+        # self.test_rmse = 1.0195120681618908
 
         self.prediction =  -0.09979289770126343
 
@@ -100,7 +100,9 @@ class TestInput(unittest.TestCase):
         self.ta = Model(XGBRegressor(), 'Unit_Test_Regressor')
 
         self.ta.set_parameters(self.parameters)
-        self.assertEqual(self.ta.fit(X_train, y_train), [self.train_rmse, self.train_mae])
+        rmse, mae = self.ta.fit(X_train, y_train)
+        self.assertAlmostEqual(rmse, self.train_rmse, 2)
+        self.assertAlmostEqual(mae, self.train_mae, 2)
 
     def test_predict(self):
         np.random.seed(31337)

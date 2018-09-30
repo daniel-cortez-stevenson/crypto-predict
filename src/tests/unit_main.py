@@ -54,9 +54,9 @@ if __name__ == '__main__':
 
     ta.set_parameters(parameters)
 
-    train_scores = ta.fit(X_train, y_train)
-    print('Train RMSE: {}'.format(train_scores[0]))
-    print("Train MAE: {}\n".format(train_scores[1]))
+    train_rmse, train_mae = ta.fit(X_train, y_train)
+    print('Train RMSE: {}'.format(train_rmse))
+    print("Train MAE: {}\n".format(train_mae))
 
     ta = SavedModel('./tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl')
     ta.load()

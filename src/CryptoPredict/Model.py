@@ -24,7 +24,7 @@ class Model(object):
         self.train_y_predicted = self.estimator.predict(X_train)
         self.train_mae = mean_absolute_error(y_pred=self.train_y_predicted, y_true=y_train)
         self.train_rmse = np.sqrt(mean_squared_error(y_pred=self.train_y_predicted, y_true=y_train))
-        return [self.train_rmse, self.train_mae]
+        return self.train_rmse, self.train_mae
 
     @my_logger
     @my_timer
@@ -33,7 +33,7 @@ class Model(object):
         self.test_mae = mean_absolute_error(y_pred=self.test_y_predicted, y_true=y_test)
         self.test_rmse = np.sqrt(mean_squared_error(y_pred=self.test_y_predicted, y_true=y_test))
         print("Test RMSE for Model:\n {}\n".format(self.test_rmse))
-        return [self.test_rmse, self.test_mae]
+        return self.test_rmse, self.test_mae
 
     @my_logger
     @my_timer
