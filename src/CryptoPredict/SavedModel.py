@@ -10,15 +10,14 @@ class SavedModel(object):
 
     @my_logger
     @my_timer
-    def __init__(self, coin, Tx, Ty, feature_window):
-        self.coin, self.Tx, self.Ty, self.feature_window = coin, Tx, Ty, feature_window
+    def __init__(self, path):
+        self.path = path
 
 
     @my_logger
     @my_timer
     def load(self):
-        self.model_path = 'models/xgboost_{}_tx{}_ty{}_flag{}.pkl'.format(self.coin, self.Tx, self.Ty, self.feature_window)
-        self.model = load_from_pickle(self.model_path)
+        self.model = load_from_pickle(self.path)
 
 
     @my_logger

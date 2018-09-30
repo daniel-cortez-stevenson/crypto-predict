@@ -3,6 +3,7 @@ import datetime
 from src.data.get_data import retrieve_all_data
 from src.features.build_features import *
 from src.CryptoPredict.Model import Model
+from src.CryptoPredict.SavedModel import SavedModel
 from src.CryptoPredict.Preprocesser import Preprocesser
 
 from xgboost import XGBRegressor
@@ -13,6 +14,7 @@ if __name__ == '__main__':
 
     SYM = 'ETH'
     LAST_N_HOURS = 16000
+    FEATURE_WINDOW=72
     MOVING_AVERAGE_LAGS = [6, 12, 24, 48, 72]
     TARGET = 'close'
     Tx = 72
@@ -56,6 +58,13 @@ if __name__ == '__main__':
     print('Train RMSE: {}'.format(train_scores[0]))
     print("Train MAE: {}\n".format(train_scores[1]))
 
-    test_scores = ta.predict(X_test, y_test)
-    print('Test RMSE: {}'.format(test_scores[0]))
-    print("Test MAE: {}\n".format(test_scores[1]))
+    ta = SavedModel('./tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl')
+    ta.load()
+    new_data = retrieve_all_data(SYM, Tx + FEATURE_WINDOW - 1,
+                                 end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype(
+                                 'uint32'))
+    preprocessor = Preprocesser(new_data, TARGET, Tx=Tx, Ty=Ty, moving_averages=[6, 12, 24, 48, 72],
+                                name='Unit_New_Prediction_Preprocessor')
+    X_new, _ = preprocessor.preprocess_predict()
+    prediction = ta.predict(X_new)[0]
+    print('Prediction: {}'.format(prediction))

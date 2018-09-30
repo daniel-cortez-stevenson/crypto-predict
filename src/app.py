@@ -38,7 +38,8 @@ def get_prediction():
                                 name='CryptoPredict_{}_tx{}_ty{}_flag{}'.format(coin, Tx, Ty, feature_window))
     X, _ = preprocessor.preprocess_predict()
 
-    model = SavedModel(coin=coin, Tx=Tx, Ty=Ty, feature_window=feature_window)
+    model_path = 'models/xgboost_{}_tx{}_ty{}_flag{}.pkl'.format(coin, Tx, Ty, feature_window)
+    model = SavedModel(model_path)
     model.load()
 
     prediction = model.predict(X)

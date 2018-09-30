@@ -5,6 +5,7 @@ from src.data.get_data import retrieve_all_data
 from src.features.build_features import *
 from src.CryptoPredict.Model import Model
 from src.CryptoPredict.Preprocesser import Preprocesser
+from src.CryptoPredict.SavedModel import SavedModel
 from xgboost import XGBRegressor
 
 class TestInput(unittest.TestCase):
@@ -25,6 +26,7 @@ class TestInput(unittest.TestCase):
 
         self.SYM = 'ETH'
         LAST_N_HOURS = 16000
+        self.FEATURE_WINDOW=72
         self.MOVING_AVERAGE_LAGS = [6, 12, 24, 48, 72]
         self.TARGET = 'close'
         self.Tx = 72
@@ -33,6 +35,10 @@ class TestInput(unittest.TestCase):
 
         self.data = retrieve_all_data(coin=self.SYM, num_hours=LAST_N_HOURS, comparison_symbol='USD',
                                  end_time=(np.datetime64(datetime.datetime(2018,6,27)).astype('uint64') / 1e6).astype('uint32'))
+
+        self.predict_data = retrieve_all_data(self.SYM, self.Tx + self.FEATURE_WINDOW - 1,
+                                 end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype(
+                                 'uint32'))
 
         self.X_sample = 705.68
         self.y_sample = -0.28191361260253567
@@ -58,6 +64,8 @@ class TestInput(unittest.TestCase):
         self.train_rmse = 1.4206723934489915
         self.test_mae = 0.6681529049518523
         self.test_rmse = 1.0195120681618908
+
+        self.prediction =  -0.09979289770126343
 
     def tearDown(self):
         # print('tearDown')
@@ -89,22 +97,19 @@ class TestInput(unittest.TestCase):
                                     name='Unit_Test')
         X, y, n_features = preprocessor.preprocess_train()
         X_train, X_test, y_train, y_test = ttsplit_and_trim(X, y, self.TEST_SIZE, n_features, self.Ty)
-        self.ta = Model(XGBRegressor(), 'xgboost_regressor')
+        self.ta = Model(XGBRegressor(), 'Unit_Test_Regressor')
 
         self.ta.set_parameters(self.parameters)
         self.assertEqual(self.ta.fit(X_train, y_train), [self.train_rmse, self.train_mae])
 
     def test_predict(self):
         np.random.seed(31337)
-        preprocessor = Preprocesser(self.data, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS,
+        preprocessor = Preprocesser(self.predict_data, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS,
                                     name='Unit_Test')
-        X, y, n_features = preprocessor.preprocess_train()
-        X_train, X_test, y_train, y_test = ttsplit_and_trim(X, y, self.TEST_SIZE, n_features, self.Ty)
-        self.ta = Model(XGBRegressor(), 'xgboost_regressor')
-
-        self.ta.set_parameters(self.parameters)
-        self.ta.fit(X_train, y_train)
-        self.assertEqual(self.ta.predict(X_test, y_test), [self.test_rmse, self.test_mae])
+        X, _ = preprocessor.preprocess_predict()
+        self.ta = SavedModel('./tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl')
+        self.ta.load()
+        self.assertEqual(self.ta.predict(X)[0], self.prediction)
 
 
 if __name__ == '__main__':
