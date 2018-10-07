@@ -2,7 +2,7 @@ language: python
 python:
   - "3.5"
 
-install: "pip install -r requirements.txt; pip install -e ."
+install: "make create_environment; source activate crypto-predict; make requirements"
 
 before_script: cd src
 
@@ -11,3 +11,4 @@ script: pytest
 branches:
   only:
   - master
+  - develop
