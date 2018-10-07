@@ -27,8 +27,8 @@ Jinja2>=2.10
 jupyter-client>=5.2.3
 jupyter-core>=4.4.0
 Keras==2.2.2
-keras-applications==1.0.4
-keras-preprocessing==1.0.2
+keras-applications>=1.0.5
+keras-preprocessing>=1.0.3
 kiwisolver>=1.0.1
 Mako>=1.0.7
 Markdown>=2.6.11
@@ -40,7 +40,7 @@ parso>=0.2.1
 patsy>=0.5.0
 pexpect>=4.6.0
 pickleshare>=0.7.4
-prompt-toolkit<2.0.0,>=1.0.15
+prompt-toolkit<2.1.0,>=2.0.0
 protobuf>=3.6.0
 ptyprocess>=0.6.0
 pycparser>=2.18
@@ -61,7 +61,7 @@ setuptools<=39.1.0
 simplegeneric>=0.8.1
 six>=1.11.0
 statsmodels>=0.9.0
-tensorboard<1.11.0,>=1.10.0
+tensorboard<1.12.0,>=1.11.0
 tensorflow>=1.8.0
 termcolor>=1.1.0
 Theano>=1.0.2
