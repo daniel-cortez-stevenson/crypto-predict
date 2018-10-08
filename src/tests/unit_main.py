@@ -28,10 +28,18 @@ if __name__ == '__main__':
     preprocessor = Preprocesser(data, TARGET, Tx, Ty, MOVING_AVERAGE_LAGS, name='Unit_Test')
     X, y, n_features = preprocessor.preprocess_train()
 
+    print('X shape: {}'.format(X.shape))
+    print('y shape: {}'.format(y.shape))
+
     print('Feature Matrix X Sample: {}'.format(X.sample(1, random_state=0).values[0][0]))
     print('Target Values y Sample: {}'.format(y.sample(1, random_state=0).values[0][0]))
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SIZE, shuffle=False)
+
+    print('X_train shape: {}'.format(X_train.shape))
+    print('X_test shape: {}'.format(X_test.shape))
+    print('y Train shape: {}'.format(y_train.shape))
+    print('y Test shape: {}'.format(y_test.shape))
 
     print('Train Feature Matrix X Sample: {}'.format(X_train.sample(1, random_state=0).values[0][0]))
     print('Train Target Values y Sample: {}'.format(y_train.sample(1, random_state=0).values[0][0]))

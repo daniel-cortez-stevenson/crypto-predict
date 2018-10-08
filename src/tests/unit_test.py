@@ -40,8 +40,16 @@ class TestInput(unittest.TestCase):
                                  end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype(
                                  'uint32'))
 
+        self.X_shape =(13859, 1224)
+        self.y_shape =(13859, 1)
+
         self.X_sample = 705.68
         self.y_sample = -0.2896853523991494
+
+        self.X_train_shape =(13166, 1224)
+        self.X_test_shape =(693, 1224)
+        self.y_train_shape = (13166, 1)
+        self.y_test_shape = (693, 1)
 
         self.X_train_sample = 88.2
         self.y_train_sample = 0.17391304347826875
@@ -77,7 +85,7 @@ class TestInput(unittest.TestCase):
         X, y, _ = preprocessor.preprocess_train()
         X_sample = X.sample(1, random_state=0).values[0][0]
         y_sample = y.sample(1, random_state=0).values[0][0]
-        self.assertEqual((X_sample, y_sample), (self.X_sample, self.y_sample))
+        self.assertEqual((X_sample, y_sample, X.shape, y.shape), (self.X_sample, self.y_sample, self.X_shape, self.y_shape))
 
     def test_split(self):
         np.random.seed(31337)
@@ -88,8 +96,10 @@ class TestInput(unittest.TestCase):
         X_test_sample=X_test.sample(1, random_state=0).values[0][0]
         y_train_sample=y_train.sample(1, random_state=0).values[0][0]
         y_test_sample=y_test.sample(1, random_state=0).values[0][0]
-        self.assertEqual((X_train_sample, X_test_sample, y_train_sample, y_test_sample),
-                         (self.X_train_sample, self.X_test_sample, self.y_train_sample, self.y_test_sample))
+        self.assertEqual((X_train_sample, X_test_sample, y_train_sample, y_test_sample,
+                          X_train.shape, X_test.shape, y_train.shape, y_test.shape),
+                         (self.X_train_sample, self.X_test_sample, self.y_train_sample, self.y_test_sample,
+                          self.X_train_shape, self.X_test_shape, self.y_train_shape, self.y_test_shape))
 
     def test_fit(self):
         np.random.seed(31337)
