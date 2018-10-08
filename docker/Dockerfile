@@ -6,7 +6,7 @@ ADD requirements.txt /app/requirements.txt
 
 # Install packages
 RUN pip install -U pip setuptools wheel
-RUN pip install -r requirements.txt
+RUN pip install -U -r requirements.txt
 
 ADD src /app/src
 ADD setup.py /app/setup.py

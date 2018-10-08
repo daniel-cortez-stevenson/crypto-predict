@@ -1,0 +1,5 @@
+# Not included in Docker build context
+.env
+.git
+data/processed/
+data/interim/

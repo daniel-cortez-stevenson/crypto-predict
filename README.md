@@ -22,10 +22,11 @@ make data
 ```
 
 Docker Usage
-=========
-<i> from top directory (with Dockerfile in it)</i>
+============
+### Local
+<i> from top directory </i>
 ```docker
-docker build -t crypto_predict_api .
+docker build -f ./docker/Dockerfile -t crypto_predict_api .
 docker run -p 5000:5000 crypto_predict_api
 ```
 Now find your prediction at localhost:5000/predict?coin={ETH or BTC}
