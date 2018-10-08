@@ -31,8 +31,7 @@ if __name__ == '__main__':
     print('Feature Matrix X Sample: {}'.format(X.sample(1, random_state=0).values[0][0]))
     print('Target Values y Sample: {}'.format(y.sample(1, random_state=0).values[0][0]))
 
-
-    X_train, X_test, y_train, y_test = ttsplit_and_trim(X, y, TEST_SIZE, n_features, Ty)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SIZE, shuffle=False)
 
     print('Train Feature Matrix X Sample: {}'.format(X_train.sample(1, random_state=0).values[0][0]))
     print('Train Target Values y Sample: {}'.format(y_train.sample(1, random_state=0).values[0][0]))

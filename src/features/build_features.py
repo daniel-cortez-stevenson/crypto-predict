@@ -56,18 +56,10 @@ def calc_volume_ma(input_df, lags)->pd.DataFrame:
 
 
 def data_to_supervised(input_df, Tx, Ty)->(pd.DataFrame, pd.Series):
-    X = series_to_supervised(data=input_df, n_in=Tx, n_out=Ty)
-    y = series_to_supervised(data=list(input_df['target']), n_in=Tx, n_out=Ty)
+    n_features = input_df.columns.values.size - 1
+    X = series_to_supervised(data=input_df, n_in=Tx, n_out=Ty).iloc[:,:-(Ty*n_features)]
+    y = series_to_supervised(data=list(input_df['target']), n_in=Tx, n_out=Ty).iloc[:,-Ty:]
     return X, y
-
-
-def ttsplit_and_trim(X, y, test_size, n_features, Ty):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, shuffle=False)
-    y_train = y_train.iloc[:,-Ty:]
-    y_test = y_test.iloc[:,-Ty:]
-    X_train = X_train.iloc[:,:-(Ty*n_features)]
-    X_test = X_test.iloc[:,:-(Ty*n_features)]
-    return X_train, X_test, y_train, y_test
 
 
 def save_preprocessing_output(X_train, X_test, y_train, y_test, sym, Tx, Ty, max_lag):

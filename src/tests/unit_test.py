@@ -41,7 +41,7 @@ class TestInput(unittest.TestCase):
                                  'uint32'))
 
         self.X_sample = 705.68
-        self.y_sample = -0.28191361260253567
+        self.y_sample = -0.2896853523991494
 
         self.X_train_sample = 88.2
         self.y_train_sample = 0.17391304347826875
@@ -83,7 +83,7 @@ class TestInput(unittest.TestCase):
         np.random.seed(31337)
         preprocessor=Preprocesser(self.data, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS, name='Unit_Test')
         X, y, n_features = preprocessor.preprocess_train()
-        X_train, X_test, y_train, y_test = ttsplit_and_trim(X, y, self.TEST_SIZE, n_features, self.Ty)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.TEST_SIZE, shuffle=False)
         X_train_sample=X_train.sample(1, random_state=0).values[0][0]
         X_test_sample=X_test.sample(1, random_state=0).values[0][0]
         y_train_sample=y_train.sample(1, random_state=0).values[0][0]
@@ -96,7 +96,7 @@ class TestInput(unittest.TestCase):
         preprocessor = Preprocesser(self.data, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS,
                                     name='Unit_Test')
         X, y, n_features = preprocessor.preprocess_train()
-        X_train, X_test, y_train, y_test = ttsplit_and_trim(X, y, self.TEST_SIZE, n_features, self.Ty)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.TEST_SIZE, shuffle=False)
         self.ta = Model(XGBRegressor(), 'Unit_Test_Regressor')
 
         self.ta.set_parameters(self.parameters)
