@@ -111,5 +111,5 @@ def make_single_feature(input_df, target_col, train_on_x_last_hours=None):
 
 def continuous_wavelet_transform(input_df, N):
     widths = np.arange(1, N + 1)
-    X_cwt = np.apply_along_axis(func1d=signal.cwt, axis=0, arr=input_df.values, wavelet=signal.ricker, widths=widths)
-    return X_cwt.swapaxes(0, 1).swapaxes(1, 2)
+    X_cwt = np.apply_along_axis(func1d=signal.cwt, axis=1, arr=input_df.values, wavelet=signal.ricker, widths=widths)
+    return X_cwt.swapaxes(1,2)
