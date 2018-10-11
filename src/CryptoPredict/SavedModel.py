@@ -1,10 +1,7 @@
 from src.tests.unit_decorator import my_logger, my_timer
-from xgboost import XGBRegressor
-import numpy as np
-from sklearn.metrics import mean_absolute_error, mean_squared_error
 from src.models.load_model import load_from_pickle
-from src.data.get_data import retrieve_all_data
-from src.features import build_features
+from keras.models import load_model
+
 
 class SavedModel(object):
 
@@ -12,12 +9,18 @@ class SavedModel(object):
     @my_timer
     def __init__(self, path):
         self.path = path
+        self.ext = self.path.split('.')[-1]
 
 
     @my_logger
     @my_timer
     def load(self):
-        self.model = load_from_pickle(self.path)
+        if self.ext == 'pkl':
+            self.model = load_from_pickle(self.path)
+        elif self.ext == 'h5':
+            self.model = load_model(self.path)
+        else:
+            print('WARNING: File Extension {} not supported.'.format(self.ext))
 
 
     @my_logger

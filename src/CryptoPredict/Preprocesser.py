@@ -1,5 +1,5 @@
 from src.tests.unit_decorator import my_logger, my_timer
-from src.features.build_features import make_features, series_to_supervised, data_to_supervised
+from src.features.build_features import make_features, series_to_predict_matrix, data_to_supervised
 
 
 class Preprocesser(object):
@@ -24,7 +24,7 @@ class Preprocesser(object):
     @my_timer
     def preprocess_predict(self):
         fe = make_features(self.data, self.target, self.moving_averages)
-        self.X = series_to_supervised(fe, n_in=self.Tx, n_out=0, dropnan=True)
+        self.X = series_to_predict_matrix(fe, n_in=self.Tx, dropnan=True)
         return self.X, fe.columns.size
 
     @my_logger

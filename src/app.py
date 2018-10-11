@@ -1,7 +1,9 @@
 #!flask/bin/python
 from flask import Flask, jsonify, abort, request, Response
+import numpy as np
 from src.CryptoPredict.SavedModel import SavedModel
-from src.CryptoPredict.Preprocesser import Preprocesser
+# from src.CryptoPredict.Preprocesser import Preprocesser
+from src.CryptoPredict.WavePreprocessor import WavePreprocesser
 from src.data.get_data import retrieve_all_data
 
 import pandas as pd
@@ -29,26 +31,41 @@ def get_prediction():
 
     Tx=72
     Ty=1
-    feature_window=72
+    N=28
+
     target='close'
 
-    data = retrieve_all_data(coin, Tx + feature_window - 1)
+    data = retrieve_all_data(coin, Tx)
 
-    preprocessor = Preprocesser(data, target, Tx=Tx, Ty=Ty, moving_averages=[6, 12, 24, 48, 72],
-                                name='CryptoPredict_{}_tx{}_ty{}_flag{}'.format(coin, Tx, Ty, feature_window))
-    X, _ = preprocessor.preprocess_predict()
+    preprocessor = WavePreprocesser(data, target, Tx=Tx, Ty=Ty, resolution=N,
+                                name='CryptoPredict_WavePreprocessor_{}'.format(coin))
+    X = preprocessor.preprocess_predict()
 
-    model_path = 'models/xgboost_{}_tx{}_ty{}_flag{}.pkl'.format(coin, Tx, Ty, feature_window)
-    model = SavedModel(model_path)
-    model.load()
+    if coin == 'ETH':
+        prediction = eth_model.predict(X)
+    elif coin == 'BTC':
+        prediction = btc_model.predict(X)
+    else:
+        #FIXME: More descriptive error
+        abort(404)
 
-    prediction = model.predict(X)
+
 
     last_target = preprocessor.data[target].iloc[-1]
+    predicted_price = np.squeeze(last_target+prediction[0]/100*last_target)
     last_time = preprocessor.data['timestamp'].iloc[-1]
     predict_times = [last_time + pd.Timedelta(hours=1*(ix+1)) for ix in range(Ty)]
 
-    return jsonify({'{}+00:00'.format(predict_times[0]): '{} USD'.format(last_target+prediction[0]/100*last_target)})
+    return jsonify({'{}+00:00'.format(predict_times[0]): '{} USD'.format(predicted_price)})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+
+    global eth_model
+    eth_model = SavedModel('models/lstm_cwt_72x28_ETH.h5')
+    eth_model.load()
+
+    global btc_model
+    btc_model = SavedModel('models/lstm_cwt_72x28_BTC.h5')
+    btc_model.load()
+
+    app.run(host='0.0.0.0', port=5000, debug=False, threaded=False)

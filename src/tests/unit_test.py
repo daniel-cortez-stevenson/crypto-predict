@@ -1,5 +1,5 @@
 import unittest
-import numpy as np
+from sklearn.model_selection import train_test_split
 import datetime
 from src.data.get_data import retrieve_all_data
 from src.features.build_features import *

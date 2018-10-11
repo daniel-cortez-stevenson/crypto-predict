@@ -1,5 +1,6 @@
+import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from scipy import signal
 
 
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
@@ -27,6 +28,23 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
             names += [('var%d(t)' % (j + 1)) for j in range(n_vars)]
         else:
             names += [('var%d(t+%d)' % (j + 1, i)) for j in range(n_vars)]
+    # put it all together
+    agg = pd.concat(cols, axis=1)
+    agg.columns = names
+    # drop rows with NaN values
+    if dropnan:
+        agg.dropna(inplace=True)
+    return agg
+
+
+def series_to_predict_matrix(data, n_in=1, dropnan=True):
+    n_vars = 1 if type(data) is list else data.shape[1]
+    df = pd.DataFrame(data)
+    cols, names = list(), list()
+    # input sequence (t-n, ... t-1)
+    for i in range(n_in-1, -1, -1):
+        cols.append(df.shift(i))
+        names += [('var%d(t-%d)' % (j + 1, i + 1)) for j in range(n_vars)]
     # put it all together
     agg = pd.concat(cols, axis=1)
     agg.columns = names
@@ -78,3 +96,20 @@ def make_features(input_df, target_col, moving_average_lags, train_on_x_last_hou
         .pipe(calc_target, target_col) \
         .pipe(calc_volume_ma, moving_average_lags) \
         .dropna(how='any', axis=0)
+
+
+def make_single_feature(input_df, target_col, train_on_x_last_hours=None):
+    df = input_df.copy()
+    df = df.loc[:, [target_col]]
+    if train_on_x_last_hours:
+        df = df.pipe(truncate, train_on_x_last_hours)
+    return df\
+        .pipe(calc_target, target_col) \
+        .dropna(how='any', axis=0)
+
+
+
+def continuous_wavelet_transform(input_df, N):
+    widths = np.arange(1, N + 1)
+    X_cwt = np.apply_along_axis(func1d=signal.cwt, axis=0, arr=input_df.values, wavelet=signal.ricker, widths=widths)
+    return X_cwt.swapaxes(0, 1).swapaxes(1, 2)
