@@ -4,7 +4,13 @@ crypto-predict
 ![Docker Build](https://img.shields.io/docker/automated/danielstevenson/crypto-predict.svg)
 ![Docker Build Status](https://img.shields.io/docker/build/danielstevenson/crypto-predict.svg)
 
-This project is a easily reproducible python/flask/docker project to predict the price of BTC and ETH at the next hour using OHLCV data for each cryptocurrency from the last 72 hours (+72 hours for volume moving average calculation).
+This project is a easily reproducible python/flask/docker project to
+create an API that predicts the price of BTC and ETH using OHLCV data.
+
+Current implementation computes a continuous wavelet transformation
+for the % change in price signal for the previous 72 hours. This data
+is fed into a convolutional layer, which feeds into a dual layer LSTM
+(network graph coming soon!).
 
 ***Note: Anaconda is recommended to manage the project environment. Environment creation without Anaconda is untested***
 
@@ -45,7 +51,7 @@ Project Organization
 
     ├── LICENSE
     ├── Makefile           <- Makefile with commands like `make data`
-    ├── README.md          <- The top-level README for developers using this project.
+    ├── README.md
     ├── data
     │   ├── external       <- Data from third party sources.
     │   ├── interim        <- Intermediate data that has been transformed.
@@ -55,7 +61,6 @@ Project Organization
     ├── models             <- Trained and serialized models, model predictions, or model summaries
     │
     ├── notebooks          <- Jupyter notebooks.
-    │                                    
     │
     ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
     │
@@ -65,27 +70,34 @@ Project Organization
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
     │
-    ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
-    ├── src                <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes src a Python module
+    ├── setup.py
+    ├── src
     │   │
-    │   ├── data           <- Scripts to download or generate data
-    │   │  
-    |   |   
+    │   ├── CryptoPredict   <- main classes that utilize functions in other src/ directories.
     │   │
-    │   ├── features       <- Scripts to turn raw data into features for modeling
+    │   ├── data           <- Functions to download or generate data
     │   │  
     │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make
+    │   ├── features       <- Functions to turn raw data into features for modeling
+    │   │  
+    │   │
+    │   ├── models         <- Functions to train models and then use trained models to make
     │   │                       predictions
     │   │  
-    │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
+    │   ├── visualization  <- Functions to create exploratory and results oriented visualizations
     │   │   
     │   │
+    │   ├── tests   <- unit_test.py and unit_main.py
+    │   │
     │   └── app.py <- the Flask code used to serve the prediction API
     │ 
-    └── Dockerfile
+    ├── docker  <- stores Dockerfiles for various deployments.
+    │
+    ├── .dockerignore   <- for all Dockerfiles. Ignores sensitive and large files.
+    │
+    ├── Dockerfile.dockerhub    <- Dockerfile used for hub.docker.com automated build
+    │
+    ├── .travis.yml     <- Automated continuous integration config
 --------
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
