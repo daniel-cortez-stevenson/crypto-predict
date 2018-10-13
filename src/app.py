@@ -39,7 +39,7 @@ def get_prediction():
 
     preprocessor = WavePreprocesser(data, target, Tx=Tx, Ty=Ty, resolution=N,
                                 name='CryptoPredict_WavePreprocessor_{}'.format(coin))
-    X = preprocessor.preprocess_predict()
+    X = preprocessor.preprocess_predict(wavelet='HAAR')
 
     if coin == 'ETH':
         prediction = eth_model.predict(X)
@@ -61,11 +61,11 @@ def get_prediction():
 if __name__ == '__main__':
 
     global eth_model
-    eth_model = SavedModel('models/lstm_cwt_72x28_ETH.h5')
+    eth_model = SavedModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_triggerNG', 72, 34, 'HAAR', 'ETH'))
     eth_model.load()
 
     global btc_model
-    btc_model = SavedModel('models/lstm_cwt_72x28_BTC.h5')
+    btc_model = SavedModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_triggerNG', 72, 34, 'HAAR', 'BTC'))
     btc_model.load()
 
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=False)

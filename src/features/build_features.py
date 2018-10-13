@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy import signal
+from src.features.wavelets import Haar
 
 
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
@@ -109,7 +110,16 @@ def make_single_feature(input_df, target_col, train_on_x_last_hours=None):
 
 
 
-def continuous_wavelet_transform(input_df, N):
-    widths = np.arange(1, N + 1)
-    X_cwt = np.apply_along_axis(func1d=signal.cwt, axis=1, arr=input_df.values, wavelet=signal.ricker, widths=widths)
+def continuous_wavelet_transform(input_df, N, wavelet='RICKER'):
+    if wavelet == 'RICKER':
+        widths = np.arange(1, N + 1)
+        cwt_transform_fun = lambda x: signal.cwt(x, wavelet=signal.ricker, widths=widths)
+    elif wavelet == 'HAAR':
+        cwt_transform_fun = lambda x: Haar(x).getpower()
+    else:
+        print('NOT IMPLEMENTED')
+        return None
+
+    X_cwt = np.apply_along_axis(func1d=cwt_transform_fun, axis=1, arr=input_df.values)
+
     return X_cwt.swapaxes(1,2)

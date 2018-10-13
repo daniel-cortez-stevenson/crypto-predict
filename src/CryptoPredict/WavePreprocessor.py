@@ -16,18 +16,18 @@ class WavePreprocesser(object):
 
     @my_logger
     @my_timer
-    def preprocess_train(self):
+    def preprocess_train(self, wavelet='RICKER'):
         fe = make_single_feature(self.data, 'close')
         self.X, self.y = data_to_supervised(input_df=fe, Tx=self.Tx, Ty=self.Ty)
-        self.X = continuous_wavelet_transform(self.X, N=self.resolution)
+        self.X = continuous_wavelet_transform(self.X, N=self.resolution, wavelet=wavelet)
         return self.X, self.y
 
     @my_logger
     @my_timer
-    def preprocess_predict(self):
+    def preprocess_predict(self, wavelet='RICKER'):
         fe = make_single_feature(self.data, 'close')
         self.X = series_to_predict_matrix(fe.target.tolist(), n_in=self.Tx, dropnan=True)
-        self.X = continuous_wavelet_transform(self.X, N=self.resolution)
+        self.X = continuous_wavelet_transform(self.X, N=self.resolution, wavelet=wavelet)
         return self.X
 
     @my_logger
