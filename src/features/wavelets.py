@@ -1,6 +1,6 @@
-import numpy as np
-
 """
+Found at: https://gist.github.com/endolith/2783866
+
 A module which implements the continuous wavelet transform
 
 ---------------------------------------------------------
@@ -69,6 +69,7 @@ updates:
             swap indices in 2-d coeffiecient matrix
             explicit scaling of scale axis
 """
+import numpy as np
 
 
 class Cwt:
@@ -355,75 +356,75 @@ class HaarW(Cwt):
         return haar
 
 
-if __name__ == "__main__":
-    import numpy as np
-    import pylab as mpl
-
-    wavelet = Morlet
-    maxscale = 4
-    notes = 16
-    scaling = "log"  # or "linear"
-    # scaling="linear"
-    plotpower2d = True
-
-    # set up some data
-    Ns = 1024
-    # limits of analysis
-    Nlo = 0
-    Nhi = Ns
-    # sinusoids of two periods, 128 and 32.
-    x = np.arange(0.0, 1.0 * Ns, 1.0)
-    A = np.sin(2.0 * np.pi * x / 128.0)
-    B = np.sin(2.0 * np.pi * x / 32.0)
-    A[512:768] += B[0:256]
-
-    # Wavelet transform the data
-    cw = wavelet(A, maxscale, notes, scaling=scaling)
-    scales = cw.getscales()
-    cwt = cw.getdata()
-    # power spectrum
-    pwr = cw.getpower()
-    scalespec = np.sum(pwr, axis=1) / scales  # calculate scale spectrum
-    # scales
-    y = cw.fourierwl * scales
-    x = np.arange(Nlo * 1.0, Nhi * 1.0, 1.0)
-
-    fig = mpl.figure(1)
-
-    # 2-d coefficient plot
-    ax = mpl.axes([0.4, 0.1, 0.55, 0.4])
-    mpl.xlabel('Time [s]')
-    plotcwt = np.clip(np.fabs(cwt.real), 0., 1000.)
-    if plotpower2d: plotcwt = pwr
-    im = mpl.imshow(plotcwt, cmap=mpl.cm.jet, extent=[x[0], x[-1], y[-1], y[0]], aspect='auto')
-    # colorbar()
-    if scaling == "log": ax.set_yscale('log')
-    mpl.ylim(y[0], y[-1])
-    ax.xaxis.set_ticks(np.arange(Nlo * 1.0, (Nhi + 1) * 1.0, 100.0))
-    ax.yaxis.set_ticklabels(["", ""])
-    theposition = mpl.gca().get_position()
-
-    # data plot
-    ax2 = mpl.axes([0.4, 0.54, 0.55, 0.3])
-    mpl.ylabel('Data')
-    pos = ax.get_position()
-    mpl.plot(x, A, 'b-')
-    mpl.xlim(Nlo * 1.0, Nhi * 1.0)
-    ax2.xaxis.set_ticklabels(["", ""])
-    mpl.text(0.5, 0.9, "Wavelet example with extra panes",
-             fontsize=14, bbox=dict(facecolor='green', alpha=0.2),
-             transform=fig.transFigure, horizontalalignment='center')
-
-    # projected power spectrum
-    ax3 = mpl.axes([0.08, 0.1, 0.29, 0.4])
-    mpl.xlabel('Power')
-    mpl.ylabel('Period [s]')
-    vara = 1.0
-    if scaling == "log":
-        mpl.loglog(scalespec / vara + 0.01, y, 'b-')
-    else:
-        mpl.semilogx(scalespec / vara + 0.01, y, 'b-')
-    mpl.ylim(y[0], y[-1])
-    mpl.xlim(1000.0, 0.01)
-
-    mpl.show()
+# if __name__ == "__main__":
+#     import numpy as np
+#     import pylab as mpl
+#
+#     wavelet = Morlet
+#     maxscale = 4
+#     notes = 16
+#     scaling = "log"  # or "linear"
+#     # scaling="linear"
+#     plotpower2d = True
+#
+#     # set up some data
+#     Ns = 1024
+#     # limits of analysis
+#     Nlo = 0
+#     Nhi = Ns
+#     # sinusoids of two periods, 128 and 32.
+#     x = np.arange(0.0, 1.0 * Ns, 1.0)
+#     A = np.sin(2.0 * np.pi * x / 128.0)
+#     B = np.sin(2.0 * np.pi * x / 32.0)
+#     A[512:768] += B[0:256]
+#
+#     # Wavelet transform the data
+#     cw = wavelet(A, maxscale, notes, scaling=scaling)
+#     scales = cw.getscales()
+#     cwt = cw.getdata()
+#     # power spectrum
+#     pwr = cw.getpower()
+#     scalespec = np.sum(pwr, axis=1) / scales  # calculate scale spectrum
+#     # scales
+#     y = cw.fourierwl * scales
+#     x = np.arange(Nlo * 1.0, Nhi * 1.0, 1.0)
+#
+#     fig = mpl.figure(1)
+#
+#     # 2-d coefficient plot
+#     ax = mpl.axes([0.4, 0.1, 0.55, 0.4])
+#     mpl.xlabel('Time [s]')
+#     plotcwt = np.clip(np.fabs(cwt.real), 0., 1000.)
+#     if plotpower2d: plotcwt = pwr
+#     im = mpl.imshow(plotcwt, cmap=mpl.cm.jet, extent=[x[0], x[-1], y[-1], y[0]], aspect='auto')
+#     # colorbar()
+#     if scaling == "log": ax.set_yscale('log')
+#     mpl.ylim(y[0], y[-1])
+#     ax.xaxis.set_ticks(np.arange(Nlo * 1.0, (Nhi + 1) * 1.0, 100.0))
+#     ax.yaxis.set_ticklabels(["", ""])
+#     theposition = mpl.gca().get_position()
+#
+#     # data plot
+#     ax2 = mpl.axes([0.4, 0.54, 0.55, 0.3])
+#     mpl.ylabel('Data')
+#     pos = ax.get_position()
+#     mpl.plot(x, A, 'b-')
+#     mpl.xlim(Nlo * 1.0, Nhi * 1.0)
+#     ax2.xaxis.set_ticklabels(["", ""])
+#     mpl.text(0.5, 0.9, "Wavelet example with extra panes",
+#              fontsize=14, bbox=dict(facecolor='green', alpha=0.2),
+#              transform=fig.transFigure, horizontalalignment='center')
+#
+#     # projected power spectrum
+#     ax3 = mpl.axes([0.08, 0.1, 0.29, 0.4])
+#     mpl.xlabel('Power')
+#     mpl.ylabel('Period [s]')
+#     vara = 1.0
+#     if scaling == "log":
+#         mpl.loglog(scalespec / vara + 0.01, y, 'b-')
+#     else:
+#         mpl.semilogx(scalespec / vara + 0.01, y, 'b-')
+#     mpl.ylim(y[0], y[-1])
+#     mpl.xlim(1000.0, 0.01)
+#
+#     mpl.show()
