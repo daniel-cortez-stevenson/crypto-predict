@@ -1,5 +1,5 @@
-from src.tests.unit_decorator import my_logger, my_timer
-from src.models.load_model import load_from_pickle
+from crypr.tests.unit_decorator import my_logger, my_timer
+from crypr.models.load_model import load_from_pickle
 from keras.models import load_model
 
 

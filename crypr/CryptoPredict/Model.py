@@ -1,4 +1,4 @@
-from src.tests.unit_decorator import my_logger, my_timer
+from crypr.tests.unit_decorator import my_logger, my_timer
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 

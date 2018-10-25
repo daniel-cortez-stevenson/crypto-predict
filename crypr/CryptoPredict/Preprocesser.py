@@ -1,5 +1,5 @@
-from src.tests.unit_decorator import my_logger, my_timer
-from src.features.build_features import make_features, series_to_predict_matrix, data_to_supervised
+from crypr.tests.unit_decorator import my_logger, my_timer
+from crypr.features.build_features import make_features, series_to_predict_matrix, data_to_supervised
 
 
 class Preprocesser(object):

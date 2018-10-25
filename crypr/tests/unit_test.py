@@ -1,11 +1,11 @@
 import unittest
 from sklearn.model_selection import train_test_split
 import datetime
-from src.data.get_data import retrieve_all_data
-from src.features.build_features import *
-from src.CryptoPredict.Model import Model
-from src.CryptoPredict.Preprocesser import Preprocesser
-from src.CryptoPredict.SavedModel import SavedModel
+from crypr.data.get_data import retrieve_all_data
+from crypr.features.build_features import *
+from crypr.CryptoPredict.Model import Model
+from crypr.CryptoPredict.Preprocesser import Preprocesser
+from crypr.CryptoPredict.SavedModel import SavedModel
 from xgboost import XGBRegressor
 
 class TestInput(unittest.TestCase):
