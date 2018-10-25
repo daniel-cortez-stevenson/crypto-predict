@@ -4,7 +4,7 @@ python:
 
 install: "make create_environment; source activate crypto-predict; make requirements"
 
-before_script: cd src
+before_script: cd crypr
 
 script: pytest
 

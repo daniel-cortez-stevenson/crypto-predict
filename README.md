@@ -71,7 +71,7 @@ Project Organization
     │                         generated with `pip freeze > requirements.txt`
     │
     ├── setup.py
-    ├── src
+    ├── crypr
     │   │
     │   ├── CryptoPredict   <- main classes that utilize functions in other src/ directories.
     │   │

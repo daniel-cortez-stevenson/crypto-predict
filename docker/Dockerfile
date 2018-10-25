@@ -8,7 +8,7 @@ ADD requirements.txt /app/requirements.txt
 RUN pip install -U pip setuptools wheel
 RUN pip install -U -r requirements.txt
 
-ADD src /app/src
+ADD crypr /app/crypr
 ADD setup.py /app/setup.py
 RUN pip install -e .
 
@@ -16,4 +16,4 @@ ADD models /app/models
 
 EXPOSE 5000
 
-CMD ["python", "/app/src/app.py"]
+CMD ["python", "/app/crypr/app.py"]
