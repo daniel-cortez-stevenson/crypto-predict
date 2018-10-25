@@ -37,7 +37,7 @@ def LSTM_triggerNG(input_shape, num_outputs, kernel_init='normal', bias_init='ze
     return model
 
 
-def LSTM_WSAEs(input_shape, num_outputs, encoding_dim=10, kernel_init='normal', bias_init='zeros'):
+def LSTM_WSAEs(input_shape, num_outputs, num_autoencoder=4, encoding_dim=10, kernel_init='normal', bias_init='zeros'):
     """
     WORK IN PROGRESS
     TODO:
@@ -57,16 +57,15 @@ def LSTM_WSAEs(input_shape, num_outputs, encoding_dim=10, kernel_init='normal', 
     """
 
     model_input = Input(shape=input_shape, dtype='float32')
+    X = Dense(encoding_dim, activation='relu', name='ae_0')(model_input)
 
-    X = TimeDistributed(Dense(encoding_dim, activation='relu'))(model_input)
-    X = TimeDistributed(Dense(encoding_dim, activation='relu'))(X)
-    X = TimeDistributed(Dense(encoding_dim, activation='relu'))(X)
-    X = TimeDistributed(Dense(encoding_dim, activation='relu'))(X)
+    for enc_layer in range(num_autoencoder-1):
+        X = Dense(encoding_dim, activation='relu', name='ae_{}'.format(enc_layer+1))(X)
 
-    X = LSTM(units=64, return_sequences=False, kernel_initializer=kernel_init, bias_initializer=bias_init)(X)
-    X = BatchNormalization(axis=-1)(X)
+    X = LSTM(units=64, return_sequences=False, kernel_initializer=kernel_init, bias_initializer=bias_init, name='lstm_0')(X)
+    X = BatchNormalization(axis=-1, name='bn_0')(X)
 
-    X = Dense(num_outputs, kernel_initializer=kernel_init, bias_initializer=bias_init, activation='linear')(X)
+    X = Dense(num_outputs, kernel_initializer=kernel_init, bias_initializer=bias_init, activation='linear', name='dense_0')(X)
 
     model = Model(inputs=model_input, outputs=X)
     return model
