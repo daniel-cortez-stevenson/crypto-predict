@@ -2,9 +2,8 @@ from sklearn.model_selection import train_test_split
 import datetime
 from crypr.data.get_data import retrieve_all_data
 from crypr.features.build_features import *
-from crypr.base.models import RegressionModel
-from crypr.base.models import SavedRegressionModel
-from crypr.base.Preprocesser import Preprocesser
+from crypr.base.models import RegressionModel, SavedRegressionModel
+from crypr.base.preprocessors import SimplePreprocessor
 
 from xgboost import XGBRegressor
 
@@ -25,8 +24,8 @@ if __name__ == '__main__':
                              end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype(
                                  'uint32'))
 
-    preprocessor = Preprocesser(data, TARGET, Tx, Ty, MOVING_AVERAGE_LAGS, name='Unit_Test')
-    X, y = preprocessor.preprocess_train()
+    preprocessor = SimplePreprocessor(production=False, target_col=TARGET, Tx=Tx, Ty=Ty, moving_averages=MOVING_AVERAGE_LAGS, name='unit_test')
+    X, y = preprocessor.fit(data).transform(data)
 
     print('X shape: {}'.format(X.shape))
     print('y shape: {}'.format(y.shape))
@@ -72,8 +71,8 @@ if __name__ == '__main__':
     new_data = retrieve_all_data(SYM, Tx + FEATURE_WINDOW - 1,
                                  end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype(
                                  'uint32'))
-    preprocessor = Preprocesser(new_data, TARGET, Tx=Tx, Ty=Ty, moving_averages=[6, 12, 24, 48, 72],
+    preprocessor = SimplePreprocessor(production=True, target_col=TARGET, Tx=Tx, Ty=Ty, moving_averages=[6, 12, 24, 48, 72],
                                 name='Unit_New_Prediction_Preprocessor')
-    X_new = preprocessor.preprocess_predict()
+    X_new = preprocessor.fit(new_data).transform(new_data)
     prediction = ta.predict(X_new)[0]
     print('Prediction: {}'.format(prediction))

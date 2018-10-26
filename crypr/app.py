@@ -2,8 +2,7 @@
 from flask import Flask, jsonify, abort, request, Response
 import numpy as np
 from crypr.base.models import SavedRegressionModel
-# from crypr.base.Preprocesser import Preprocesser
-from crypr.base.WavePreprocessor import WavePreprocesser
+from crypr.base.preprocessors import CWTPreprocessor
 from crypr.data.get_data import retrieve_all_data
 
 import pandas as pd
@@ -37,9 +36,9 @@ def get_prediction():
 
     data = retrieve_all_data(coin, Tx)
 
-    preprocessor = WavePreprocesser(data, target, Tx=Tx, Ty=Ty, resolution=N,
+    preprocessor = CWTPreprocessor(True, target, Tx=Tx, Ty=Ty, N=N, wavelet='HAAR',
                                 name='CryptoPredict_WavePreprocessor_{}'.format(coin))
-    X = preprocessor.preprocess_predict(wavelet='HAAR')
+    X = preprocessor.fit(data).transform(data)
 
     if coin == 'ETH':
         prediction = eth_model.predict(X)
@@ -51,9 +50,9 @@ def get_prediction():
 
 
 
-    last_target = preprocessor.data[target].iloc[-1]
+    last_target = data[target].iloc[-1]
     predicted_price = np.squeeze(last_target+prediction[0]/100*last_target)
-    last_time = preprocessor.data['timestamp'].iloc[-1]
+    last_time = data['timestamp'].iloc[-1]
     predict_times = [last_time + pd.Timedelta(hours=1*(ix+1)) for ix in range(Ty)]
 
     return jsonify({'{}+00:00'.format(predict_times[0]): '{} USD'.format(predicted_price)})
