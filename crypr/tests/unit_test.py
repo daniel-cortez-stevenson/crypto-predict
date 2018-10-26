@@ -3,9 +3,9 @@ from sklearn.model_selection import train_test_split
 import datetime
 from crypr.data.get_data import retrieve_all_data
 from crypr.features.build_features import *
-from crypr.CryptoPredict.Model import Model
-from crypr.CryptoPredict.Preprocesser import Preprocesser
-from crypr.CryptoPredict.SavedModel import SavedModel
+from crypr.base.Model import Model
+from crypr.base.Preprocesser import Preprocesser
+from crypr.base.SavedModel import SavedModel
 from xgboost import XGBRegressor
 
 class TestInput(unittest.TestCase):

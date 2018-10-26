@@ -1,9 +1,9 @@
 #!flask/bin/python
 from flask import Flask, jsonify, abort, request, Response
 import numpy as np
-from crypr.CryptoPredict.SavedModel import SavedModel
-# from crypr.CryptoPredict.Preprocesser import Preprocesser
-from crypr.CryptoPredict.WavePreprocessor import WavePreprocesser
+from crypr.base.SavedModel import SavedModel
+# from crypr.base.Preprocesser import Preprocesser
+from crypr.base.WavePreprocessor import WavePreprocesser
 from crypr.data.get_data import retrieve_all_data
 
 import pandas as pd
