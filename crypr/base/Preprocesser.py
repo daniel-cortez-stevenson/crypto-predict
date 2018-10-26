@@ -18,14 +18,14 @@ class Preprocesser(object):
     def preprocess_train(self):
         fe = make_features(self.data, self.target, self.moving_averages)
         self.X, self.y = data_to_supervised(fe, self.Tx, self.Ty)
-        return self.X, self.y, fe.columns.size
+        return self.X, self.y
 
     @my_logger
     @my_timer
     def preprocess_predict(self):
         fe = make_features(self.data, self.target, self.moving_averages)
         self.X = series_to_predict_matrix(fe, n_in=self.Tx, dropnan=True)
-        return self.X, fe.columns.size
+        return self.X
 
     @my_logger
     @my_timer

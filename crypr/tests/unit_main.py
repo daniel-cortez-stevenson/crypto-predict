@@ -2,8 +2,8 @@ from sklearn.model_selection import train_test_split
 import datetime
 from crypr.data.get_data import retrieve_all_data
 from crypr.features.build_features import *
-from crypr.base.Model import Model
-from crypr.base.SavedModel import SavedModel
+from crypr.base.models import RegressionModel
+from crypr.base.models import SavedRegressionModel
 from crypr.base.Preprocesser import Preprocesser
 
 from xgboost import XGBRegressor
@@ -26,7 +26,7 @@ if __name__ == '__main__':
                                  'uint32'))
 
     preprocessor = Preprocesser(data, TARGET, Tx, Ty, MOVING_AVERAGE_LAGS, name='Unit_Test')
-    X, y, n_features = preprocessor.preprocess_train()
+    X, y = preprocessor.preprocess_train()
 
     print('X shape: {}'.format(X.shape))
     print('y shape: {}'.format(y.shape))
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     print('Test Feature Matrix X Sample: {}'.format(X_test.sample(1, random_state=0).values[0][0]))
     print('Test Target Values y Sample: {}'.format(y_test.sample(1, random_state=0).values[0][0]))
 
-    ta = Model(XGBRegressor(), 'xgboost_regressor')
+    ta = RegressionModel(XGBRegressor(), 'xgboost_regressor')
 
     parameters = {
         'objective': 'reg:linear',
@@ -59,19 +59,21 @@ if __name__ == '__main__':
         'n_estimators': 20
     }
 
-    ta.set_parameters(parameters)
+    ta.estimator.set_params(**parameters)
 
-    train_rmse, train_mae = ta.fit(X_train, y_train)
+    ta.fit(X_train, y_train)
+    train_pred = ta.predict(X_train, y_train)
+    train_rmse, train_mae = ta.evaluate(y_pred=train_pred, y_true=y_train)
     print('Train RMSE: {}'.format(train_rmse))
     print("Train MAE: {}\n".format(train_mae))
 
-    ta = SavedModel('./tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl')
+    ta = SavedRegressionModel('./tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl')
 
     new_data = retrieve_all_data(SYM, Tx + FEATURE_WINDOW - 1,
                                  end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype(
                                  'uint32'))
     preprocessor = Preprocesser(new_data, TARGET, Tx=Tx, Ty=Ty, moving_averages=[6, 12, 24, 48, 72],
                                 name='Unit_New_Prediction_Preprocessor')
-    X_new, _ = preprocessor.preprocess_predict()
+    X_new = preprocessor.preprocess_predict()
     prediction = ta.predict(X_new)[0]
     print('Prediction: {}'.format(prediction))

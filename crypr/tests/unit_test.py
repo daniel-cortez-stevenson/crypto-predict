@@ -3,9 +3,8 @@ from sklearn.model_selection import train_test_split
 import datetime
 from crypr.data.get_data import retrieve_all_data
 from crypr.features.build_features import *
-from crypr.base.Model import Model
+from crypr.base.models import RegressionModel, SavedRegressionModel
 from crypr.base.Preprocesser import Preprocesser
-from crypr.base.SavedModel import SavedModel
 from xgboost import XGBRegressor
 
 class TestInput(unittest.TestCase):
@@ -82,7 +81,7 @@ class TestInput(unittest.TestCase):
     def test_preprocess(self):
         np.random.seed(31337)
         preprocessor=Preprocesser(self.data, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS, name='Unit_Test')
-        X, y, _ = preprocessor.preprocess_train()
+        X, y = preprocessor.preprocess_train()
         X_sample = X.sample(1, random_state=0).values[0][0]
         y_sample = y.sample(1, random_state=0).values[0][0]
         self.assertEqual((X_sample, y_sample, X.shape, y.shape), (self.X_sample, self.y_sample, self.X_shape, self.y_shape))
@@ -90,7 +89,7 @@ class TestInput(unittest.TestCase):
     def test_split(self):
         np.random.seed(31337)
         preprocessor=Preprocesser(self.data, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS, name='Unit_Test')
-        X, y, n_features = preprocessor.preprocess_train()
+        X, y = preprocessor.preprocess_train()
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.TEST_SIZE, shuffle=False)
         X_train_sample=X_train.sample(1, random_state=0).values[0][0]
         X_test_sample=X_test.sample(1, random_state=0).values[0][0]
@@ -105,12 +104,14 @@ class TestInput(unittest.TestCase):
         np.random.seed(31337)
         preprocessor = Preprocesser(self.data, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS,
                                     name='Unit_Test')
-        X, y, n_features = preprocessor.preprocess_train()
+        X, y = preprocessor.preprocess_train()
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.TEST_SIZE, shuffle=False)
-        self.ta = Model(XGBRegressor(), 'Unit_Test_Regressor')
+        self.ta = RegressionModel(XGBRegressor(), 'Unit_Test_Regressor')
 
-        self.ta.set_parameters(self.parameters)
-        rmse, mae = self.ta.fit(X_train, y_train)
+        self.ta.estimator.set_params(**self.parameters)
+        self.ta.fit(X_train, y_train)
+        train_pred = self.ta.predict(X_train)
+        rmse, mae = self.ta.evaluate(y_pred=train_pred, y_true=y_train)
         self.assertAlmostEqual(rmse, self.train_rmse, 2)
         self.assertAlmostEqual(mae, self.train_mae, 2)
 
@@ -118,8 +119,8 @@ class TestInput(unittest.TestCase):
         np.random.seed(31337)
         preprocessor = Preprocesser(self.predict_data, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS,
                                     name='Unit_Test')
-        X, _ = preprocessor.preprocess_predict()
-        self.ta = SavedModel('./tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl')
+        X = preprocessor.preprocess_predict()
+        self.ta = SavedRegressionModel('./tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl')
         self.assertEqual(self.ta.predict(X)[0], self.prediction)
 
 
