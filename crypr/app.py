@@ -62,10 +62,8 @@ if __name__ == '__main__':
 
     global eth_model
     eth_model = SavedModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_triggerNG', 72, 34, 'HAAR', 'ETH'))
-    eth_model.load()
 
     global btc_model
     btc_model = SavedModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_triggerNG', 72, 34, 'HAAR', 'BTC'))
-    btc_model.load()
 
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=False)

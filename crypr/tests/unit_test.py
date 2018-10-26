@@ -120,7 +120,6 @@ class TestInput(unittest.TestCase):
                                     name='Unit_Test')
         X, _ = preprocessor.preprocess_predict()
         self.ta = SavedModel('./tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl')
-        self.ta.load()
         self.assertEqual(self.ta.predict(X)[0], self.prediction)
 
 

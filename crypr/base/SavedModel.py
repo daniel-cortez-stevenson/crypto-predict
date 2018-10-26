@@ -10,6 +10,7 @@ class SavedModel(object):
     def __init__(self, path):
         self.path = path
         self.ext = self.path.split('.')[-1]
+        self.load()
 
 
     @my_logger

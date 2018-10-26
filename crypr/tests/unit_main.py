@@ -66,7 +66,7 @@ if __name__ == '__main__':
     print("Train MAE: {}\n".format(train_mae))
 
     ta = SavedModel('./tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl')
-    ta.load()
+
     new_data = retrieve_all_data(SYM, Tx + FEATURE_WINDOW - 1,
                                  end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype(
                                  'uint32'))
