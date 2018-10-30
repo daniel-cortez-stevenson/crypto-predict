@@ -51,7 +51,7 @@ PySocks>=1.6.8
 python-dateutil>=2.7.3
 python-dotenv>=0.8.2
 pytz>=2018.4
-PyWavelets==0.4.0
+PyWavelets==1.0.1
 PyYAML>=3.12
 pyzmq>=17.0.0
 requests>=2.19.1
