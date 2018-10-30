@@ -36,7 +36,7 @@ def get_prediction():
 
     data = retrieve_all_data(coin, Tx)
 
-    preprocessor = CWTPreprocessor(True, target, Tx=Tx, Ty=Ty, N=N, wavelet='HAAR',
+    preprocessor = CWTPreprocessor(True, target, Tx=Tx, Ty=Ty, N=N, wavelet='MORLET',
                                 name='CryptoPredict_WavePreprocessor_{}'.format(coin))
     X = preprocessor.fit(data).transform(data)
 
@@ -48,7 +48,9 @@ def get_prediction():
         #FIXME: More descriptive error
         abort(404)
 
-
+    # If a multi-output model, take the last prediction - which will be pct change.
+    if prediction.shape.size > 1:
+        prediction=prediction[1]
 
     last_target = data[target].iloc[-1]
     predicted_price = np.squeeze(last_target+prediction[0]/100*last_target)
@@ -60,9 +62,9 @@ def get_prediction():
 if __name__ == '__main__':
 
     global eth_model
-    eth_model = SavedRegressionModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_triggerNG', 72, 34, 'HAAR', 'ETH'))
+    eth_model = SavedRegressionModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_triggerNG', 28, 72, 'MORLET', 'ETH'))
 
     global btc_model
-    btc_model = SavedRegressionModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_triggerNG', 72, 34, 'HAAR', 'BTC'))
+    btc_model = SavedRegressionModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_triggerNG', 28, 72, 'MORLET', 'BTC'))
 
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=False)

@@ -1,32 +1,33 @@
 """
 Welcome to the Zoo. All the different models - for your viewing!
 """
+import numpy as np
 from keras.layers import Input, LSTM, GRU, BatchNormalization, Dense, Conv1D, TimeDistributed, Activation, Dropout
 from keras import Model
 
 
-def LSTM_triggerNG(input_shape, num_outputs, kernel_init='normal', bias_init='zeros'):
+def LSTM_triggerNG(num_inputs, num_channels, num_outputs, kernel_init='normal', bias_init='zeros'):
     """
     Modified from Andrew Ng's Deeplearning.ai Sequence Modeling course on Coursera.
     Originally used for trigger word detection.
     Notes:
         - Switched GRU cells to LSTM cells
-        - BiDirectional
+        - BiDirectional???
         - Custom, guesswork kernel_size and strides in Conv1D
     """
 
-    model_input = Input(shape=input_shape, dtype='float32')
+    model_input = Input(shape=(num_channels, num_inputs), dtype='float32')
 
     X = Conv1D(196, kernel_size=4, strides=2, kernel_initializer=kernel_init, bias_initializer=bias_init)(model_input)
     X = BatchNormalization(axis=-1)(X)
     X = Activation('relu')(X)
     X = Dropout(0.8)(X)
 
-    X = LSTM(units=128, return_sequences=True, go_backwards=True, kernel_initializer=kernel_init, bias_initializer=bias_init)(X)
+    X = LSTM(units=128, return_sequences=True, kernel_initializer=kernel_init, bias_initializer=bias_init)(X)
     X = Dropout(0.8)(X)
     X = BatchNormalization(axis=-1)(X)
 
-    X = LSTM(units=128, return_sequences=False, go_backwards=True, kernel_initializer=kernel_init, bias_initializer=bias_init)(X)
+    X = LSTM(units=128, return_sequences=False, kernel_initializer=kernel_init, bias_initializer=bias_init)(X)
     X = Dropout(0.8)(X)
     X = BatchNormalization(axis=-1)(X)
     X = Dropout(0.8)(X)
@@ -37,7 +38,7 @@ def LSTM_triggerNG(input_shape, num_outputs, kernel_init='normal', bias_init='ze
     return model
 
 
-def LSTM_WSAEs(input_shape, num_outputs, num_autoencoder=4, encoding_dim=10, kernel_init='normal', bias_init='zeros'):
+def LSTM_WSAEs(num_inputs, num_channels=1, num_outputs=1, encoding_dim=10, kernel_init='normal', bias_init='zeros'):
     """
     WORK IN PROGRESS
     TODO:
@@ -53,19 +54,25 @@ def LSTM_WSAEs(input_shape, num_outputs, num_autoencoder=4, encoding_dim=10, ker
     Notes:
         - Added BatchNormalization Layer after LSTM
         - Increased LSTM hidden unit layer to 64
+        - Made up hidden_dim (only specified encoding_dim=10
 
     """
 
-    model_input = Input(shape=input_shape, dtype='float32')
-    X = Dense(encoding_dim, activation='relu', name='ae_0')(model_input)
+    # Encoder/Decoder hidden unit size halfway between num_inputs and encoding_dim
+    hidden_dim = num_inputs - np.int((num_inputs - encoding_dim) / 2)
 
-    for enc_layer in range(num_autoencoder-1):
-        X = Dense(encoding_dim, activation='relu', name='ae_{}'.format(enc_layer+1))(X)
+    # Autoencoder
+    X_input = Input(shape=(num_channels, num_inputs), dtype='float32')
+    encoder = Dense(hidden_dim, activation='relu', name='encoder')(X_input)
+    encoded = Dense(encoding_dim, activation='relu', name='encoded')(encoder)
+    decoder = Dense(hidden_dim, activation='relu', name='decoder')(encoded)
+    decoded = Dense(num_inputs, activation='linear', name='decoded')(decoder)
 
-    X = LSTM(units=64, return_sequences=False, kernel_initializer=kernel_init, bias_initializer=bias_init, name='lstm_0')(X)
+    # LSTM
+    X = LSTM(units=64, return_sequences=False, kernel_initializer=kernel_init, bias_initializer=bias_init, name='lstm_0')(encoded)
     X = BatchNormalization(axis=-1, name='bn_0')(X)
 
     X = Dense(num_outputs, kernel_initializer=kernel_init, bias_initializer=bias_init, activation='linear', name='dense_0')(X)
 
-    model = Model(inputs=model_input, outputs=X)
+    model = Model(inputs=[X_input], outputs=[decoded, X])
     return model

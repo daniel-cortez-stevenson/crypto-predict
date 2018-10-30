@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy import signal
-from crypr.features.wavelets import Haar
+import pywt
 
 
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
@@ -109,17 +109,17 @@ def make_single_feature(input_df, target_col, train_on_x_last_hours=None):
         .dropna(how='any', axis=0)
 
 
-
 def continuous_wavelet_transform(input_df, N, wavelet='RICKER'):
+    widths = np.arange(1, N + 1)
+
     if wavelet == 'RICKER':
-        widths = np.arange(1, N + 1)
-        cwt_transform_fun = lambda x: signal.cwt(x, wavelet=signal.ricker, widths=widths)
-    elif wavelet == 'HAAR':
-        cwt_transform_fun = lambda x: Haar(x).getpower()
+        wt_transform_fun = lambda x: signal.cwt(x, wavelet=signal.ricker, widths=widths)
+    elif wavelet == 'MORLET':
+        wt_transform_fun = lambda x: pywt.cwt(x, scales=widths, wavelet='morl')[0]
     else:
         print('NOT IMPLEMENTED')
-        return None
+        return
 
-    X_cwt = np.apply_along_axis(func1d=cwt_transform_fun, axis=1, arr=input_df.values)
+    X_cwt_coef = np.apply_along_axis(func1d=wt_transform_fun, axis=-1, arr=input_df.values)
 
-    return X_cwt.swapaxes(1,2)
+    return X_cwt_coef
