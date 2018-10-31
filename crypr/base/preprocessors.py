@@ -1,7 +1,7 @@
 from crypr.tests.unit_decorator import my_logger, my_timer
-from crypr.features.build_features import make_features, series_to_predict_matrix, data_to_supervised
+from crypr.features.build import make_features, series_to_predict_matrix, data_to_supervised
 from sklearn.base import TransformerMixin
-from crypr.features.build_features import continuous_wavelet_transform, make_single_feature
+from crypr.features.build import continuous_wavelet_transform, make_single_feature
 import numpy as np
 
 
