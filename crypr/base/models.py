@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.base import BaseEstimator, RegressorMixin
 from keras.models import load_model
-from crypr.models.load_model import load_from_pickle
+from crypr.util.io import load_from_pickle
 
 
 class Model(BaseEstimator):
