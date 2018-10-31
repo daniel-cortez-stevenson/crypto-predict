@@ -49,7 +49,7 @@ def get_prediction():
         abort(404)
 
     # If a multi-output model, take the last prediction - which will be pct change.
-    if prediction.shape.size > 1:
+    if len(prediction) == 2:
         prediction=prediction[1]
 
     last_target = data[target].iloc[-1]
@@ -62,9 +62,9 @@ def get_prediction():
 if __name__ == '__main__':
 
     global eth_model
-    eth_model = SavedRegressionModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_triggerNG', 28, 72, 'MORLET', 'ETH'))
+    eth_model = SavedRegressionModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_WSAEs', 28, 72, 'MORLET', 'ETH'))
 
     global btc_model
-    btc_model = SavedRegressionModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_triggerNG', 28, 72, 'MORLET', 'BTC'))
+    btc_model = SavedRegressionModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_WSAEs', 28, 72, 'MORLET', 'BTC'))
 
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=False)

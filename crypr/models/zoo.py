@@ -2,7 +2,7 @@
 Welcome to the Zoo. All the different models - for your viewing!
 """
 import numpy as np
-from keras.layers import Input, LSTM, GRU, BatchNormalization, Dense, Conv1D, TimeDistributed, Activation, Dropout
+from keras.layers import Input, LSTM, GRU, BatchNormalization, Dense, Conv1D, TimeDistributed, Activation, Dropout, Reshape
 from keras import Model
 
 
@@ -69,7 +69,8 @@ def LSTM_WSAEs(num_inputs, num_channels=1, num_outputs=1, encoding_dim=10, kerne
     decoded = Dense(num_inputs, activation='linear', name='decoded')(decoder)
 
     # LSTM
-    X = LSTM(units=64, return_sequences=False, kernel_initializer=kernel_init, bias_initializer=bias_init, name='lstm_0')(encoded)
+    X = Reshape(target_shape=(encoding_dim, num_channels), name='rs_0')(encoded)
+    X = LSTM(units=64, return_sequences=False, kernel_initializer=kernel_init, bias_initializer=bias_init, name='lstm_0')(X)
     X = BatchNormalization(axis=-1, name='bn_0')(X)
 
     X = Dense(num_outputs, kernel_initializer=kernel_init, bias_initializer=bias_init, activation='linear', name='dense_0')(X)
