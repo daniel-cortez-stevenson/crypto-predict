@@ -123,3 +123,21 @@ def continuous_wavelet_transform(input_df, N, wavelet='RICKER'):
     X_cwt_coef = np.apply_along_axis(func1d=wt_transform_fun, axis=-1, arr=input_df.values)
 
     return X_cwt_coef
+
+
+def discrete_wavelet_transform_smooth(input_df, wavelet):
+
+    def dwt_smooth(x, wavelet):
+        cA, cD = pywt.dwt(x, wavelet)
+
+        def make_threshold(x):
+            return np.std(x) * np.sqrt(2 * np.log(x.size))
+
+        cAt = pywt.threshold(cA, make_threshold(cA), mode="soft")
+        cDt = pywt.threshold(cD, make_threshold(cD), mode="soft")
+        tx = pywt.idwt(cAt, cDt, wavelet)
+        return tx
+
+    X_sm = np.apply_along_axis(func1d=lambda x: dwt_smooth(x, wavelet), axis=-1, arr=input_df.values)
+
+    return X_sm
