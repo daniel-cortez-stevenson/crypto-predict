@@ -1,6 +1,6 @@
 from sklearn.model_selection import train_test_split
 import datetime
-from crypr.data.get_data import retrieve_all_data
+from crypr.data.cryptocompare import retrieve_all_data
 from crypr.features.build import *
 from crypr.base.models import RegressionModel, SavedRegressionModel
 from crypr.base.preprocessors import SimplePreprocessor

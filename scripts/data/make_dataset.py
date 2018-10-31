@@ -2,7 +2,7 @@
 import logging
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
-from crypr.data import get_data
+from crypr.data import cryptocompare
 import os
 
 def main():
@@ -15,7 +15,7 @@ def main():
     coins=['BTC', 'ETH']
 
     for coin in coins:
-        coin_data = get_data.retrieve_all_data(coin=coin, num_hours=46000, comparison_symbol='USD')
+        coin_data = cryptocompare.retrieve_all_data(coin=coin, num_hours=46000, comparison_symbol='USD')
         coin_data.to_csv(project_path + '/data/raw/{}.csv'.format(coin))
 
 if __name__ == '__main__':

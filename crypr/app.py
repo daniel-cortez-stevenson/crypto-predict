@@ -3,7 +3,7 @@ from flask import Flask, jsonify, abort, request, Response
 import numpy as np
 from crypr.base.models import SavedRegressionModel
 from crypr.base.preprocessors import CWTPreprocessor
-from crypr.data.get_data import retrieve_all_data
+from crypr.data.cryptocompare import retrieve_all_data
 
 import pandas as pd
 import os
