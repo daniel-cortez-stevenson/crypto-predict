@@ -33,6 +33,17 @@ requirements: test_environment
 data: requirements
 	$(PYTHON_INTERPRETER) scripts/data/make_dataset.py
 
+
+## Make Features
+features: data
+	$(PYTHON_INTERPRETER) scripts/features/make_features.py
+
+
+## Make Models
+models: features
+	$(PYTHON_INTERPRETER) scripts/models/make_train_models.py
+
+
 ## Delete all compiled Python files
 clean:
 	find . -type f -name "*.py[co]" -delete

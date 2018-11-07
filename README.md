@@ -25,8 +25,7 @@ Run the following to create the project python environment and get the training 
 ```bash
 make create_environment
 source activate crypto-predict
-make requirements
-make data
+make models
 ```
 
 Docker Usage
