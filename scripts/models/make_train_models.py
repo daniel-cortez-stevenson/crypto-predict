@@ -2,7 +2,7 @@
 import logging
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
-from crypr.features.build import make_single_feature, data_to_supervised, discrete_wavelet_transform_smooth
+from crypr.base.models import RegressionModel
 import os
 import numpy as np
 from crypr.models.zoo import build_ae_lstm
@@ -49,18 +49,19 @@ def main():
 
 
         if model_type == 'ae_lstm':
-            model = build_ae_lstm(num_inputs=model_X_train.shape[-1], num_channels=num_channels, num_outputs=Ty)
+            estimator=build_ae_lstm(num_inputs=model_X_train.shape[-1], num_channels=num_channels, num_outputs=Ty)
+            model = RegressionModel(estimator, model_type)
         else:
             model = None
 
-        print(model.summary())
+        print(model.estimator.summary())
 
         tb_log_dir='{}/logs'.format(output_path)
         tensorboard = TensorBoard(log_dir=tb_log_dir,
                                   histogram_freq=0, batch_size=batch_size,
                                   write_graph=True, write_grads=False, write_images=False)
         opt = Adam(lr=learning_rate, beta_1=beta_1, beta_2=beta_2, decay=decay)
-        model.compile(loss='mae', optimizer=opt)
+        model.estimator.compile(loss='mae', optimizer=opt)
 
         print('Fitting model ...')
         print('Track model fit with `tensorboard --logdir {}`'.format(tb_log_dir))
@@ -72,7 +73,7 @@ def main():
                         callbacks=[tensorboard]
                         )
 
-        model.save(filepath='{}/{}_smooth_{}x{}_{}_{}.h5'.format(output_path, model_type, num_channels, Tx, WAVELET, SYM))
+        model.save_estimator(path='{}/{}_smooth_{}x{}_{}_{}.h5'.format(output_path, model_type, num_channels, Tx, WAVELET, SYM))
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

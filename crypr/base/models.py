@@ -34,7 +34,11 @@ class Model(BaseEstimator):
     @my_logger
     @my_timer
     def save_estimator(self, path):
-        self.estimator.to_pickle('{}/{}.pkl'.format(path, self.name))
+        ext=path.split('.')[-1]
+        if ext=='pkl':
+            self.estimator.to_pickle(path)
+        elif ext=='h5':
+            self.estimator.save(path)
 
 
 class RegressionModel(Model, RegressorMixin):
