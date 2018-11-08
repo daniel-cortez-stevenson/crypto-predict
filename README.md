@@ -7,10 +7,8 @@ crypto-predict
 This project is a easily reproducible python/flask/docker project to
 create an API that predicts the price of BTC and ETH using OHLCV data.
 
-Current implementation computes a continuous wavelet transformation
-for the % change in price signal for the previous 72 hours. This data
-is fed into a convolutional layer, which feeds into a dual layer LSTM
-(network graph coming soon!).
+Current implementation smooths the raw close % change data (previous 72 hours) using a Haar discrete wavelet transformation. This data
+is fed into a stacked autoencoder. The encoded layer of the autoencoder feeds into a dual-layer LSTM with linear activation function. The autoencoder and LSTM are trained simultaneously (network graph coming soon!).
 
 ***Note: Anaconda is recommended to manage the project environment. Environment creation without Anaconda is untested***
 
@@ -23,9 +21,10 @@ Run the following to create the project python environment and get the training 
 
 *from the top project directory*
 ```bash
+touch .env   # Must have a .env file for some functions to find correct path
 make create_environment
 source activate crypto-predict
-make models
+make models # Downloads data, makes features, then trains and saves model.
 ```
 
 Docker Usage
@@ -33,8 +32,8 @@ Docker Usage
 ### Local
 <i> from top directory </i>
 ```docker
-docker build -f ./docker/Dockerfile -t crypto_predict_api .
-docker run -p 5000:5000 crypto_predict_api
+docker build -f ./docker/Dockerfile -t crypr-api .
+docker run -p 5000:5000 crypr-api
 ```
 Now find your prediction at localhost:5000/predict?coin={ETH or BTC}
 
@@ -49,13 +48,15 @@ Project Organization
 ------------
 
     ├── LICENSE
-    ├── Makefile           <- Makefile with commands like `make data`
+    ├── Makefile           <- Makefile with commands like `make data` or `make models`
     ├── README.md
+    ├── setup.py
+    ├── requirements.txt   
     ├── data
-    │   ├── external       <- Data from third party sources.
-    │   ├── interim        <- Intermediate data that has been transformed.
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    │   └── raw            <- The original, immutable data dump.
+    │   ├── external       <- Data from 3rd party sources.
+    │   ├── interim        <- Intermediate data.
+    │   ├── processed      <- Featurized data.
+    │   └── raw            <- Cryptocompare data is saved here.
     │
     ├── models             <- Trained and serialized models, model predictions, or model summaries
     │
@@ -64,15 +65,11 @@ Project Organization
     ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
     │
     ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting
+    │   └── figures        <- Generated graphics and figures to be used in reporting                   
     │
-    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-    │                         generated with `pip freeze > requirements.txt`
-    │
-    ├── setup.py
     ├── crypr
     │   │
-    │   ├── CryptoPredict   <- main classes that utilize functions in other src/ directories.
+    │   ├── base           <- main classes for preprocessing and prediction
     │   │
     │   ├── data           <- Functions to download or generate data
     │   │  
@@ -86,7 +83,7 @@ Project Organization
     │   ├── visualization  <- Functions to create exploratory and results oriented visualizations
     │   │   
     │   │
-    │   ├── tests   <- unit_test.py and unit_main.py
+    │   ├── tests   <- unit_tests and unit_main scripts.
     │   │
     │   └── app.py <- the Flask code used to serve the prediction API
     │ 
