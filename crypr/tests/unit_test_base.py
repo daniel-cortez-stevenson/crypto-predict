@@ -126,7 +126,7 @@ class TestInput(unittest.TestCase):
         np.random.seed(31337)
         preprocessor = SimplePreprocessor(True, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS, name='Unit_Test')
         X = preprocessor.fit(self.predict_data).transform(self.predict_data)
-        self.ta = SavedRegressionModel('{}/unit_xgboost_ETH_tx72_ty1_flag72.pkl'.format(self.project_path))
+        self.ta = SavedRegressionModel('{}/crypr/tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl'.format(self.project_path))
         self.assertEqual(self.ta.predict(X)[0], self.prediction)
 
 
