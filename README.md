@@ -17,7 +17,7 @@ Make Commands
 
 The Makefile contains the central entry points for common tasks related to this project.
 
-Run the following to create the project python environment and get the training data from Cryptocompare API.
+Run the following to create the project python environment, install packages, get the training data from Cryptocompare API, featurize the data, and train models for use in the docker API.
 
 *from the top project directory*
 ```bash
