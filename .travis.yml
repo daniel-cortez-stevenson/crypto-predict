@@ -2,7 +2,9 @@ language: python
 python:
   - "3.5"
 
-install: "make create_environment; source activate crypto-predict; make models"
+install: "touch .env; make create_environment; source activate crypto-predict; make models"
+
+before_script: cd crypr
 
 script: "pytest --rootdir='./crypr'"
 
