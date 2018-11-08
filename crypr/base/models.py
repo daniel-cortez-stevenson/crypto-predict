@@ -22,8 +22,9 @@ class Model(BaseEstimator):
 
     @my_logger
     @my_timer
-    def fit(self, X, y=None):
-        self.estimator.fit(X, y)
+    def fit(self, X, y=None, **kwargs):
+        self.fit=self.estimator.fit(X, y, **kwargs)
+        return self.fit
 
     @my_logger
     @my_timer
