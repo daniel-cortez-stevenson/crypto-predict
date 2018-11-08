@@ -21,7 +21,7 @@ Run the following to create the project python environment and get the training 
 
 *from the top project directory*
 ```bash
-touch .env   # Must have a .env file for some functions to find correct path
+mv .env_template .env   # Must have a .env file for some functions to find correct path
 make create_environment
 source activate crypto-predict
 make models # Downloads data, makes features, then trains and saves model.

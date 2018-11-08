@@ -83,3 +83,6 @@ target/
 
 # Tensorboard log
 notebooks/logs/
+
+# Pytest
+.pytest_cache

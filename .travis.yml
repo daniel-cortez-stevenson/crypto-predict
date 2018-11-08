@@ -2,7 +2,7 @@ language: python
 python:
   - "3.5"
 
-install: "touch .env; make create_environment; source activate crypto-predict; make requirements"
+install: "mv .env_template .env; make create_environment; source activate crypto-predict; make requirements"
 
 script: "pytest ./crypr/tests/unit_test_*.py"
 
