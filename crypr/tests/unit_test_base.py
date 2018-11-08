@@ -1,4 +1,6 @@
 import unittest
+from dotenv import find_dotenv, load_dotenv
+import os
 from sklearn.model_selection import train_test_split
 import datetime
 from crypr.data.cryptocompare import retrieve_all_data
@@ -22,6 +24,9 @@ class TestInput(unittest.TestCase):
     def setUp(self):
         print('setUp')
         np.random.seed(31337)
+
+        load_dotenv(find_dotenv())
+        self.project_path = os.path.dirname(find_dotenv())
 
         self.SYM = 'ETH'
         LAST_N_HOURS = 16000
@@ -121,7 +126,7 @@ class TestInput(unittest.TestCase):
         np.random.seed(31337)
         preprocessor = SimplePreprocessor(True, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS, name='Unit_Test')
         X = preprocessor.fit(self.predict_data).transform(self.predict_data)
-        self.ta = SavedRegressionModel('./tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl')
+        self.ta = SavedRegressionModel('{}/unit_xgboost_ETH_tx72_ty1_flag72.pkl'.format(self.project_path))
         self.assertEqual(self.ta.predict(X)[0], self.prediction)
 
 
