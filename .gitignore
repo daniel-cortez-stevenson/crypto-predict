@@ -86,3 +86,7 @@ notebooks/logs/
 
 # Pytest
 .pytest_cache
+
+# Model output
+!models/.gitkeep
+models/*
