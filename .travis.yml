@@ -2,9 +2,20 @@ language: python
 python:
   - "3.5"
 
-install: "mv .env_template .env; make create_environment; source activate crypto-predict; make requirements"
+services:
+  - docker
 
-script: "pytest ./crypr/tests/unit_test_*.py"
+install:
+  - mv .env_template .env
+  - make create_environment
+  - source activate crypto-predict
+  - make models
+  - docker build -f ./docker/Dockerfile -t crypr-api .
+  - docker run -p 5000:5000 crypr-api
+
+script:
+  - docker ps | grep -q crypr-api
+  - pytest ./crypr/tests/unit_test_*.py
 
 branches:
   only:
