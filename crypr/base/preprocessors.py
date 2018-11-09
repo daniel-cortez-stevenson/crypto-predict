@@ -1,7 +1,7 @@
 from crypr.tests.unit_decorator import my_logger, my_timer
 from crypr.features.build import make_features, series_to_predict_matrix, data_to_supervised
 from sklearn.base import TransformerMixin
-from crypr.features.build import continuous_wavelet_transform, make_single_feature
+from crypr.features.build import continuous_wavelet_transform, make_single_feature, discrete_wavelet_transform_smooth
 import numpy as np
 
 
@@ -13,9 +13,13 @@ class Preprocesser(TransformerMixin):
         self.Tx, self.Ty = Tx, Ty
         self.name = name
 
+    @my_logger
+    @my_timer
     def fit(self, X, y=None):
         return self
 
+    @my_logger
+    @my_timer
     def transform(self, X):
         return X
 
@@ -78,12 +82,31 @@ class CWTPreprocessor(Preprocesser):
             X = continuous_wavelet_transform(X, N=self.N, wavelet=self.wavelet)
             return X, y
 
-    # @my_logger
-    # @my_timer
-    # def save_output(self, path):
-    #     if self.X:
-    #         np.save(self.X, '{}/X_{}_{}x{}.npy'.format(path, self.name, self.Tx, self.N))
-    #         print('Feature data saved to: {}/X_CWT_{}_{}x{}.npy'.format(path, self.wavelet, self.Tx, self.N))
-    #     if self.y:
-    #         np.save(self.y, '{}/y_{}_{}x{}.npy'.format(path, self.name, self.Tx, self.N))
-    #         print('Target data saved to: {}/y_CWT_{}_{}x{}.npy'.format(path, self.wavelet, self.Tx, self.N))
+
+class DWTSmoothPreprocessor(Preprocesser):
+
+    @my_logger
+    @my_timer
+    def __init__(self, production, target_col, Tx, Ty, wavelet, name):
+        self.production = production
+        self.target_col = target_col
+        self.Tx, self.Ty = Tx, Ty
+        self.wavelet = wavelet
+        self.name = name
+
+    @my_logger
+    @my_timer
+    def transform(self, X):
+        fe = make_single_feature(X, self.target_col)
+        if self.production:
+            X = series_to_predict_matrix(fe.target.tolist(), n_in=self.Tx, dropnan=True)
+            X = discrete_wavelet_transform_smooth(X, wavelet=self.wavelet)
+            if len(X.shape) < 3:
+                X = np.swapaxes(np.expand_dims(X, axis=-1), axis1=-2, axis2=-1)
+            return X
+        else:
+            X, y = data_to_supervised(input_df=fe, Tx=self.Tx, Ty=self.Ty)
+            X = discrete_wavelet_transform_smooth(X, wavelet=self.wavelet)
+            if len(X.shape) < 3:
+                X = np.swapaxes(np.expand_dims(X, axis=-1), axis1=-2, axis2=-1)
+            return X, y
