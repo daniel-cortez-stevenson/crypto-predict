@@ -22,12 +22,6 @@ def main():
     for coin in coins:
         coin_data = cryptocompare.retrieve_all_data(coin=coin, num_hours=46000, comparison_symbol='USD')
         coin_output_path='{}/{}.csv'.format(output_path, coin)
-        if not os.path.exists(coin_output_path):
-            def touch(path):
-                print('touching {}'.format(path))
-                with open(path, 'a'):
-                    os.utime(path, None)
-            touch(coin_output_path)
         coin_data.to_csv(coin_output_path)
 
 if __name__ == '__main__':

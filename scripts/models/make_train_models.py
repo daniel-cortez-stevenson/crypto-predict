@@ -23,6 +23,8 @@ def main():
     num_channels = 1
     input_path='{}/data/processed'.format(project_path)
     output_path = '{}/models'.format(project_path)
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
     WAVELET='haar'
 
     epochs = 10

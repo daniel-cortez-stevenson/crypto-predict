@@ -22,6 +22,8 @@ def main():
     Ty = 1
     TEST_SIZE = 0.05
     output_path = '{}/data/processed'.format(project_path)
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
     WAVELET='haar'
 
     for SYM in coins:
