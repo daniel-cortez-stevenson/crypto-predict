@@ -12,11 +12,23 @@ def main():
     logger = logging.getLogger(__name__)
     logger.info('downloading data from cryptocompare...')
 
+    output_path='{}/data/raw'.format(project_path)
+    if not os.path.exists(output_path):
+        print('Making output directory...')
+        os.mkdir(output_path)
+
     coins=['BTC', 'ETH']
 
     for coin in coins:
         coin_data = cryptocompare.retrieve_all_data(coin=coin, num_hours=46000, comparison_symbol='USD')
-        coin_data.to_csv(project_path + '/data/raw/{}.csv'.format(coin))
+        coin_output_path='{}/{}.csv'.format(output_path, coin)
+        if not os.path.exists(coin_output_path):
+            def touch(path):
+                print('touching {}'.format(path))
+                with open(path, 'a'):
+                    os.utime(path, None)
+            touch(coin_output_path)
+        coin_data.to_csv(coin_output_path)
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
