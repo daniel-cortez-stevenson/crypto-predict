@@ -27,7 +27,7 @@ class CrawlSite(BrokenLinkTest):
     ''' Verify no broken links are present within blog '''
     def runTest(self):
         ''' Execute recursive request '''
-        results = self.request_prediction("http://0.0.0.0:5000/predict", ['BTC', 'ETH'])
+        results = self.request_prediction("http://127.0.0.1:5000/predict", ['BTC', 'ETH'])
         for r in results:
             status=r[1].status_code
             coin=r[0]
