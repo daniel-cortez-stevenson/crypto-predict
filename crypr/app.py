@@ -2,7 +2,7 @@
 from flask import Flask, jsonify, abort, request, Response
 import numpy as np
 from crypr.base.models import SavedRegressionModel
-from crypr.base.preprocessors import CWTPreprocessor
+from crypr.base.preprocessors import DWTSmoothPreprocessor
 from crypr.data.cryptocompare import retrieve_all_data
 
 import pandas as pd
@@ -30,14 +30,14 @@ def get_prediction():
 
     Tx=72
     Ty=1
-    N=28
-
+    # N=28
+    wavelet='haar'
     target='close'
 
     data = retrieve_all_data(coin, Tx)
 
-    preprocessor = CWTPreprocessor(True, target, Tx=Tx, Ty=Ty, N=N, wavelet='MORLET',
-                                name='CryptoPredict_WavePreprocessor_{}'.format(coin))
+    preprocessor = DWTSmoothPreprocessor(True, target, Tx=Tx, Ty=Ty, wavelet=wavelet,
+                                name='CryptoPredict_DWTSmoothPreprocessor_{}'.format(coin))
     X = preprocessor.fit(data).transform(data)
 
     if coin == 'ETH':
@@ -60,11 +60,13 @@ def get_prediction():
     return jsonify({'{}+00:00'.format(predict_times[0]): '{} USD'.format(predicted_price)})
 
 if __name__ == '__main__':
+    model_type='ae_lstm'
+    wavelet='haar'
 
     global eth_model
-    eth_model = SavedRegressionModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_WSAEs', 28, 72, 'MORLET', 'ETH'))
+    eth_model = SavedRegressionModel('models/{}_smooth_{}x{}_{}_{}.h5'.format(model_type, 1, 72, wavelet, 'ETH'))
 
     global btc_model
-    btc_model = SavedRegressionModel('models/{}_cwt_{}x{}_{}_{}.h5'.format('LSTM_WSAEs', 28, 72, 'MORLET', 'BTC'))
+    btc_model = SavedRegressionModel('models/{}_smooth_{}x{}_{}_{}.h5'.format(model_type, 1, 72, wavelet, 'BTC'))
 
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=False)
