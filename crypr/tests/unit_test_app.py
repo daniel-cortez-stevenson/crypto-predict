@@ -1,14 +1,14 @@
-''' Crawl the running Docker site and verify all links give a 200 OK '''
+''' Check API endpoints of Docker container and verify all endpoints give a 200 OK '''
 
 import unittest
-import re
 import requests
 
-class BrokenLinkTest(unittest.TestCase):
+class TestRequest(unittest.TestCase):
     ''' Base class for testing links '''
 
     def setUp(self):
         ''' Define some unique data for validation '''
+        self.domain = "http://127.0.0.1:5000"
         self.acceptable_codes = [200]
 
     def tearDown(self):
@@ -16,18 +16,25 @@ class BrokenLinkTest(unittest.TestCase):
         self.domain = None
         self.acceptable_codes = None
 
-    def request_prediction(self, url=None, coins=None):
-        results=[]
-        for coin in coins:
-            r = requests.get('{}?coin={}'.format(url, coin), allow_redirects=False, verify=False)
-            results.append(r)
-        return list(zip(coins, results))
+    def request(self, url=None, arg_dict=None):
+        url = self.domain + url
+        if arg_dict:
+            for arg, val in arg_dict.items():
+                url='{}?{}={}'.format(url, arg, val)
+        r = requests.get(url, allow_redirects=False, verify=False)
+        return r
 
-class CrawlSite(BrokenLinkTest):
-    ''' Verify no broken links are present within blog '''
+class TestPredictEndpoint(TestRequest):
+
     def runTest(self):
-        ''' Execute recursive request '''
-        results = self.request_prediction("http://127.0.0.1:5000/predict", ['BTC', 'ETH'])
+        coins=['BTC', 'ETH']
+        results=[]
+
+        for coin in coins:
+            arg_dict={'coin':coin}
+            r = self.request("/predict", arg_dict)
+            results.append((coin, r))
+
         for r in results:
             status=r[1].status_code
             coin=r[0]

@@ -3,7 +3,7 @@ from crypr.base.models import RegressionModel
 from crypr.models.zoo import *
 
 
-class TestInput(unittest.TestCase):
+class TestModel(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):

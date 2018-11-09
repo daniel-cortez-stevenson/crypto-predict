@@ -5,13 +5,17 @@ python:
 services:
   - docker
 
+git:
+  depth: false
+
 install:
   - mv .env_template .env
   - make create_environment
   - source activate crypto-predict
   - make models
   - docker build -f ./docker/Dockerfile -t crypr-api .
-  - docker run -d -p 5000:5000 crypr-api
+  - CONTAINER_ID=$(docker run -d -p 5000:5000 crypr-api)
+  - sh ./docker/wait_for_healthy.sh $CONTAINER_ID
 
 script:
   - docker ps | grep -q crypr-api

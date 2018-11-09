@@ -9,7 +9,7 @@ from crypr.base.models import RegressionModel, SavedRegressionModel
 from crypr.base.preprocessors import SimplePreprocessor
 from xgboost import XGBRegressor
 
-class TestInput(unittest.TestCase):
+class TestBase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
