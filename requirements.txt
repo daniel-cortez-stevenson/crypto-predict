@@ -26,9 +26,9 @@ jedi>=0.12.0
 Jinja2>=2.10
 jupyter-client>=5.2.3
 jupyter-core>=4.4.0
-Keras==2.2.2
-keras-applications==1.0.4
-keras-preprocessing==1.0.2
+Keras>=2.2.2
+keras-applications>=1.0.6
+keras-preprocessing>=1.0.5
 kiwisolver>=1.0.1
 Mako>=1.0.7
 Markdown>=2.6.11
