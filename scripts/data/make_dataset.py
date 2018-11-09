@@ -15,7 +15,7 @@ def main():
     output_path='{}/data/raw'.format(project_path)
     if not os.path.exists(output_path):
         print('Making output directory...')
-        os.mkdir(output_path)
+        os.makedirs(output_path)
 
     coins=['BTC', 'ETH']
 
