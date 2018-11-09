@@ -11,7 +11,7 @@ install:
   - source activate crypto-predict
   - make models
   - docker build -f ./docker/Dockerfile -t crypr-api .
-  - docker run -p 5000:5000 crypr-api
+  - docker run -d -p 5000:5000 crypr-api
 
 script:
   - docker ps | grep -q crypr-api
