@@ -16,4 +16,7 @@ ADD models /app/models
 
 EXPOSE 5000
 
+HEALTHCHECK --interval=10s --timeout=5s \
+  CMD curl -f http://0.0.0.0:5000/predict?coin=BTC || exit 1
+
 CMD ["python", "/app/crypr/app.py"]
