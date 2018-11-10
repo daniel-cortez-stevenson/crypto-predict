@@ -19,6 +19,7 @@ install:
   - sh ./docker/wait_for_healthy.sh $CONTAINER_ID
 script:
   - docker ps | grep -q crypr-api
+  - pytest ./crypr/tests/unit_test_*.py
   - coverage run --source=crypr setup.py test
 after_success:
   - coveralls
