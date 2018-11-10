@@ -9,6 +9,7 @@ certifi==2018.8.24
 cffi>=1.11.5
 chardet>=3.0.4
 click>=6.7
+coverage==4.0.3
 cryptography>=2.2.2
 cycler>=0.10.0
 decorator>=4.3.0
@@ -50,6 +51,7 @@ pyOpenSSL>=18.0.0
 pyparsing>=2.2.0
 PySocks>=1.6.8
 pytest==3.5.1
+python-coveralls==2.9.1
 python-dateutil>=2.7.3
 python-dotenv>=0.8.2
 pytz>=2018.4
