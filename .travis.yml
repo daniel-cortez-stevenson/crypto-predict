@@ -8,6 +8,11 @@ services:
 git:
   depth: false
 
+branches:
+  only:
+  - master
+  - develop
+  
 install:
   - mv .env_template .env
   - make create_environment
@@ -21,7 +26,5 @@ script:
   - docker ps | grep -q crypr-api
   - pytest ./crypr/tests/unit_test_*.py
 
-branches:
-  only:
-  - master
-  - develop
+after_success:
+  - coveralls

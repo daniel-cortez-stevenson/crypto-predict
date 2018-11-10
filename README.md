@@ -1,6 +1,7 @@
 crypto-predict
 ==============================
 [![Build Status](https://travis-ci.com/daniel-cortez-stevenson/crypto-predict.svg?branch=master)](https://travis-ci.com/daniel-cortez-stevenson/crypto-predict)
+[![Coverage Status](https://coveralls.io/repos/github/daniel-cortez-stevenson/crypto-predict/badge.svg?branch=master)](https://coveralls.io/github/daniel-cortez-stevenson/crypto-predict?branch=master)
 ![Docker Build](https://img.shields.io/docker/automated/danielstevenson/crypto-predict.svg)
 ![Docker Build Status](https://img.shields.io/docker/build/danielstevenson/crypto-predict.svg)
 
