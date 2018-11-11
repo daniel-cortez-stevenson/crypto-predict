@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+import click
 import logging
 from dotenv import find_dotenv, load_dotenv
 from crypr.data import cryptocompare
 import os
 
-
-def main():
+@click.command()
+@click.option("-h", "--hours", default=46000, type=click.INT,
+              help="Number of hours of data to download for each coin.")
+def main(hours):
     logger = logging.getLogger(__name__)
     logger.info('Downloading data from Cryptocompare ...')
 
@@ -17,7 +20,7 @@ def main():
     coins = ['BTC', 'ETH']
 
     for coin in coins:
-        coin_data = cryptocompare.retrieve_all_data(coin=coin, num_hours=46000, comparison_symbol='USD')
+        coin_data = cryptocompare.retrieve_all_data(coin=coin, num_hours=hours, comparison_symbol='USD')
         coin_output_path = '{}/{}.csv'.format(output_path, coin)
         coin_data.to_csv(coin_output_path)
 

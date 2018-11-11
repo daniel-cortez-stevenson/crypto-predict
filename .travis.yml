@@ -13,7 +13,9 @@ install:
   - mv .env_template .env
   - make create_environment
   - source activate crypto-predict
-  - make models
+  - python ./scripts/data/make_dataset.py --hours 1000
+  - python ./scripts/features/make_features.py
+  - python ./scripts/models/make_train_models.py --epochs 1
   - docker build -f ./docker/Dockerfile -t crypr-api .
   - CONTAINER_ID=$(docker run -d -p 5000:5000 crypr-api)
   - sh ./docker/wait_for_healthy.sh $CONTAINER_ID

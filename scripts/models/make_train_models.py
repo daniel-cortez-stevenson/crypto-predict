@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import click
 import logging
 from dotenv import find_dotenv, load_dotenv
 from crypr.base.models import RegressionModel
@@ -9,7 +10,10 @@ from keras.optimizers import Adam
 from keras.callbacks import TensorBoard
 
 
-def main():
+@click.command()
+@click.option("-e", "--epochs", default=10, type=click.INT,
+              help="Number of epochs to run for each model.")
+def main(epochs):
     logger = logging.getLogger(__name__)
     logger.info('Creating and Training RNN Models...')
 
@@ -23,7 +27,6 @@ def main():
         os.makedirs(output_path)
     WAVELET = 'haar'
 
-    epochs = 10
     batch_size = 32
     learning_rate = .001
     beta_1 = 0.9
@@ -53,7 +56,7 @@ def main():
         opt = Adam(lr=learning_rate, beta_1=beta_1, beta_2=beta_2, decay=decay)
         model.estimator.compile(loss='mae', optimizer=opt)
 
-        print('Fitting model ...')
+        print('Training model for {} epochs ...'.format(epochs))
         print('Track model fit with `tensorboard --logdir {}`'.format(tb_log_dir))
         model.fit(
             X_train, [X_train, y_train],
