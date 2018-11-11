@@ -52,7 +52,8 @@ clean:
 
 ## Lint using flake8
 lint:
-    flake8 crypr
+    flake8 --max-line-length 119 crypr
+    flake8 --max-line-length 119 scripts
 
 
 ## Set up python interpreter environment

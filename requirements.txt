@@ -13,6 +13,7 @@ coverage==4.0.3
 cryptography>=2.2.2
 cycler>=0.10.0
 decorator>=4.3.0
+flake8>=3.5.0
 Flask>=1.0.2
 gast>=0.2.0
 grpcio>=1.12.1
@@ -35,6 +36,7 @@ Mako>=1.0.7
 Markdown>=2.6.11
 MarkupSafe>=1.0
 matplotlib>=2.2.2
+mccabe>=0.6.1
 numpy<=1.14.5,>=1.13.3
 pandas>=0.23.1
 parso>=0.2.1
@@ -45,7 +47,9 @@ pluggy==0.6.0
 prompt-toolkit<2.1.0,>=2.0.0
 protobuf>=3.6.0
 ptyprocess>=0.6.0
+pycodestyle>=2.3.1
 pycparser>=2.18
+pyflakes>=1.6.0
 Pygments>=2.2.0
 pyOpenSSL>=18.0.0
 pyparsing>=2.2.0
