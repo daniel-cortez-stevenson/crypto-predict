@@ -13,6 +13,7 @@ install:
   - mv .env_template .env
   - make create_environment
   - source activate crypto-predict
+  - make requirements
   - python ./scripts/data/make_dataset.py --hours 1000
   - python ./scripts/features/make_features.py
   - python ./scripts/models/make_train_models.py --epochs 1
