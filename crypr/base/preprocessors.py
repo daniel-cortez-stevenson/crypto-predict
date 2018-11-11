@@ -60,7 +60,7 @@ class CWTPreprocessor(Preprocesser):
     @my_logger
     @my_timer
     def __init__(self, production, target_col, Tx, Ty, N, wavelet, name):
-        Preprocesser.__init__(self, production, target_col, Tx, Ty, name)
+        Preprocesser.__init__(self, production, Tx, Ty, target_col, name)
         self.N = N
         self.wavelet = wavelet
 
@@ -83,7 +83,7 @@ class DWTSmoothPreprocessor(Preprocesser):
     @my_logger
     @my_timer
     def __init__(self, production, target_col, Tx, Ty, wavelet, name):
-        Preprocesser.__init__(self, production, target_col, Tx, Ty, name)
+        Preprocesser.__init__(self, production, Tx, Ty, target_col, name)
         self.wavelet = wavelet
 
     @my_logger
