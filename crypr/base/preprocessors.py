@@ -99,13 +99,13 @@ class DWTSmoothPreprocessor(Preprocesser):
     def transform(self, X):
         fe = make_single_feature(X, self.target_col)
         if self.production:
-            X = series_to_predict_matrix(fe.target.tolist(), n_in=self.Tx, dropnan=True)
+            X = series_to_predict_matrix(fe['target'].tolist(), n_in=self.Tx, dropnan=True)
             X = discrete_wavelet_transform_smooth(X, wavelet=self.wavelet)
             if len(X.shape) < 3:
                 X = np.swapaxes(np.expand_dims(X, axis=-1), axis1=-2, axis2=-1)
             return X
         else:
-            X, y = data_to_supervised(input_df=fe, Tx=self.Tx, Ty=self.Ty)
+            X, y = data_to_supervised(input_df=fe[['target']], Tx=self.Tx, Ty=self.Ty)
             X = discrete_wavelet_transform_smooth(X, wavelet=self.wavelet)
             if len(X.shape) < 3:
                 X = np.swapaxes(np.expand_dims(X, axis=-1), axis1=-2, axis2=-1)

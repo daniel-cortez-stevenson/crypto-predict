@@ -61,7 +61,8 @@ def main():
             epochs=epochs,
             batch_size=batch_size,
             validation_data=(X_test, [X_test, y_test]),
-            callbacks=[tensorboard]
+            callbacks=[tensorboard],
+            verbose=0
         )
 
         model.save_estimator(path='{}/{}_smooth_{}x{}_{}_{}.h5'.format(
