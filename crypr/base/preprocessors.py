@@ -29,7 +29,7 @@ class SimplePreprocessor(Preprocesser):
     @my_logger
     @my_timer
     def __init__(self, production, target_col, Tx, Ty, moving_averages,  name):
-        super().__init__(production, Tx, Ty, target_col, name)
+        Preprocesser.__init__(self, production, Tx, Ty, target_col, name)
         self.moving_averages = moving_averages
 
     @my_logger
@@ -60,7 +60,7 @@ class CWTPreprocessor(Preprocesser):
     @my_logger
     @my_timer
     def __init__(self, production, target_col, Tx, Ty, N, wavelet, name):
-        super().__init__(production, target_col, Tx, Ty, name)
+        Preprocesser.__init__(self, production, target_col, Tx, Ty, name)
         self.N = N
         self.wavelet = wavelet
 
@@ -83,7 +83,7 @@ class DWTSmoothPreprocessor(Preprocesser):
     @my_logger
     @my_timer
     def __init__(self, production, target_col, Tx, Ty, wavelet, name):
-        super().__init__(production, target_col, Tx, Ty, name)
+        Preprocesser.__init__(self, production, target_col, Tx, Ty, name)
         self.wavelet = wavelet
 
     @my_logger
