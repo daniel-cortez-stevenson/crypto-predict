@@ -8,9 +8,10 @@ import numpy as np
 class Preprocesser(TransformerMixin):
     @my_logger
     @my_timer
-    def __init__(self, production, Tx, Ty, name):
+    def __init__(self, production, Tx, Ty, target_col, name):
         self.production = production
         self.Tx, self.Ty = Tx, Ty
+        self.target_col=target_col
         self.name = name
 
     @my_logger
@@ -28,11 +29,8 @@ class SimplePreprocessor(Preprocesser):
     @my_logger
     @my_timer
     def __init__(self, production, target_col, Tx, Ty, moving_averages,  name):
-        self.production = production
-        self.target_col = target_col
-        self.Tx, self.Ty = Tx, Ty
+        super().__init__(production, Tx, Ty, target_col, name)
         self.moving_averages = moving_averages
-        self.name = name
 
     @my_logger
     @my_timer
@@ -62,12 +60,9 @@ class CWTPreprocessor(Preprocesser):
     @my_logger
     @my_timer
     def __init__(self, production, target_col, Tx, Ty, N, wavelet, name):
-        self.production = production
-        self.target_col = target_col
-        self.Tx, self.Ty = Tx, Ty
+        super().__init__(production, target_col, Tx, Ty, name)
         self.N = N
         self.wavelet = wavelet
-        self.name = name
 
     @my_logger
     @my_timer
@@ -88,11 +83,8 @@ class DWTSmoothPreprocessor(Preprocesser):
     @my_logger
     @my_timer
     def __init__(self, production, target_col, Tx, Ty, wavelet, name):
-        self.production = production
-        self.target_col = target_col
-        self.Tx, self.Ty = Tx, Ty
+        super().__init__(production, target_col, Tx, Ty, name)
         self.wavelet = wavelet
-        self.name = name
 
     @my_logger
     @my_timer
