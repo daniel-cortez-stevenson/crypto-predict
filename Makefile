@@ -1,4 +1,4 @@
-.PHONY: requirements create_environment clean lint data features models
+.PHONY: requirements clean lint data features models
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -52,8 +52,8 @@ clean:
 
 ## Lint using flake8
 lint:
-    flake8 --max-line-length 119 crypr
-    flake8 --max-line-length 119 scripts
+	flake8 --max-line-length 119 crypr
+	flake8 --max-line-length 119 scripts
 
 
 ## Set up python interpreter environment
@@ -144,4 +144,4 @@ help:
 		} \
 		printf "\n"; \
 	}' \
-| more $(shell test $(shell uname) = Darwin && echo '--no-init --raw-control-chars')
+	|   more $(shell test $(shell uname) = Darwin && echo '--no-init --raw-control-chars')
