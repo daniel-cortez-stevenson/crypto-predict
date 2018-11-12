@@ -3,6 +3,7 @@ from crypr.features.build import make_features, series_to_predict_matrix, data_t
 from sklearn.base import TransformerMixin
 from crypr.features.build import continuous_wavelet_transform, make_single_feature, discrete_wavelet_transform_smooth
 import numpy as np
+import pandas as pd
 
 
 class Preprocesser(TransformerMixin):
@@ -115,7 +116,6 @@ class DWTSmoothPreprocessor(Preprocesser):
             return X, y
 
     def _reshape(self, X):
-        self.engineered_columns = X.columns.values
         if len(X.shape) < 3:
             X = np.swapaxes(np.expand_dims(X, axis=-1), axis1=-2, axis2=-1)
         return X
