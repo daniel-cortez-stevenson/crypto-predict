@@ -3,7 +3,7 @@ from dotenv import find_dotenv, load_dotenv
 import os
 from sklearn.model_selection import train_test_split
 import datetime
-from crypr.data.cryptocompare import retrieve_all_data
+from crypr.data import cryptocompare
 from crypr.features.build import *
 from crypr.base.models import RegressionModel, SavedRegressionModel
 from crypr.base.preprocessors import SimplePreprocessor
@@ -36,13 +36,13 @@ class TestBase(unittest.TestCase):
         self.Tx = 72
         self.Ty = 1
         self.TEST_SIZE = 0.05
+        self.end_time = (np.datetime64(datetime.datetime(2018,6,27)).astype('uint64') / 1e6).astype('uint32')
 
-        self.data = retrieve_all_data(coin=self.SYM, num_hours=LAST_N_HOURS, comparison_symbol='USD',
-                                 end_time=(np.datetime64(datetime.datetime(2018,6,27)).astype('uint64') / 1e6).astype('uint32'))
+        self.data = cryptocompare.retrieve_all_data(coin=self.SYM, num_hours=LAST_N_HOURS, comparison_symbol='USD',
+                                 end_time=self.end_time)
 
-        self.predict_data = retrieve_all_data(self.SYM, self.Tx + self.FEATURE_WINDOW - 1,
-                                 end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype(
-                                 'uint32'))
+        self.predict_data = cryptocompare.retrieve_all_data(coin=self.SYM, num_hours=self.Tx + self.FEATURE_WINDOW - 1,
+                                              comparison_symbol='USD', end_time=self.end_time)
 
         self.X_shape =(13859, 1224)
         self.y_shape =(13859, 1)
@@ -88,6 +88,11 @@ class TestBase(unittest.TestCase):
         preprocessor = SimplePreprocessor(False, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS, name='Unit_Test')
 
         X, y = preprocessor.fit(self.data).transform(self.data)
+
+        old_shape = X.shape
+        new_shape = (old_shape[0], old_shape[1] * old_shape[2], 1)
+        X = pd.DataFrame(np.reshape(a=X, newshape=new_shape))
+
         X_sample = X.sample(1, random_state=0).values[0][0]
         y_sample = y.sample(1, random_state=0).values[0][0]
         self.assertEqual((X_sample, y_sample, X.shape, y.shape), (self.X_sample, self.y_sample, self.X_shape, self.y_shape))
@@ -97,6 +102,11 @@ class TestBase(unittest.TestCase):
         preprocessor = SimplePreprocessor(False, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS,
                                           name='Unit_Test')
         X, y = preprocessor.fit(self.data).transform(self.data)
+
+        old_shape = X.shape
+        new_shape = (old_shape[0], old_shape[1] * old_shape[2], 1)
+        X = pd.DataFrame(np.reshape(a=X, newshape=new_shape))
+
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.TEST_SIZE, shuffle=False)
         X_train_sample=X_train.sample(1, random_state=0).values[0][0]
         X_test_sample=X_test.sample(1, random_state=0).values[0][0]
@@ -113,6 +123,12 @@ class TestBase(unittest.TestCase):
 
         X, y = preprocessor.fit(self.data).transform(self.data)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.TEST_SIZE, shuffle=False)
+
+        old_shape = X_train.shape
+        new_shape = (old_shape[0], old_shape[1]*old_shape[2], 1)
+        X_train = pd.DataFrame(np.reshape(a=X_train, newshape=new_shape))
+        X_test = pd.DataFrame(np.reshape(a=X_test, newshape=new_shape))
+
         self.ta = RegressionModel(XGBRegressor(), 'Unit_Test_Regressor')
 
         self.ta.estimator.set_params(**self.parameters)
@@ -126,6 +142,11 @@ class TestBase(unittest.TestCase):
         np.random.seed(31337)
         preprocessor = SimplePreprocessor(True, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS, name='Unit_Test')
         X = preprocessor.fit(self.predict_data).transform(self.predict_data)
+
+        old_shape = X.shape
+        new_shape = (old_shape[0], old_shape[1] * old_shape[2], 1)
+        X = pd.DataFrame(np.reshape(a=X, newshape=new_shape))
+
         self.ta = SavedRegressionModel('{}/crypr/tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl'.format(self.project_path))
         self.assertEqual(self.ta.predict(X)[0], self.prediction)
 
