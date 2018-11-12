@@ -44,19 +44,19 @@ class TestBase(unittest.TestCase):
         self.predict_data = cryptocompare.retrieve_all_data(coin=self.SYM, num_hours=self.Tx + self.FEATURE_WINDOW - 1,
                                               comparison_symbol='USD', end_time=self.end_time)
 
-        self.X_shape =(13858, 1224)
-        self.y_shape =(13858, 1)
+        self.X_shape =(13852, 1224)
+        self.y_shape =(13852, 1)
 
-        self.X_sample = 47.83
-        self.y_sample = 0.700741962077478
+        self.X_sample = 709.48
+        self.y_sample = -1.498064809896027
 
-        self.X_train_shape =(13165, 1224)
+        self.X_train_shape =(13159, 1224)
         self.X_test_shape =(693, 1224)
-        self.y_train_shape = (13165, 1)
+        self.y_train_shape = (13159, 1)
         self.y_test_shape = (693, 1)
 
-        self.X_train_sample = 46.63
-        self.y_train_sample = 0.8046214153084374
+        self.X_train_sample = 11.41
+        self.y_train_sample = 0.0
 
         self.X_test_sample = 487.58
         self.y_test_sample = 0.9448599618077758
@@ -72,8 +72,8 @@ class TestBase(unittest.TestCase):
             'n_estimators': 20
         }
 
-        self.train_mae = 0.9028942008024246
-        self.train_rmse = 1.4284612280532651
+        self.train_mae = 0.8953377462440475
+        self.train_rmse = 1.4144230033451395
         # self.test_mae = 0.6681529049518523
         # self.test_rmse = 1.0195120681618908
 

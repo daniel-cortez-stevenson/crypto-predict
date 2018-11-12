@@ -32,7 +32,7 @@ def retrieve_all_data(coin,
     if num_hours <= 2000:
         num_calls = 1
         limit = num_hours
-        last_limit=limit
+        last_limit = limit
     else:
         limit = 2000
         num_calls = np.int(np.ceil(num_hours / limit))
@@ -40,16 +40,19 @@ def retrieve_all_data(coin,
 
     print('Will call API {} times'.format(num_calls))
     for i in range(num_calls):
-        if i == num_calls -1:
+        if i == num_calls - 1:
             limit = last_limit
 
         r = retrieve_hourly_data(coin=coin, comparison_symbol=comparison_symbol, to_time=end_time, limit=limit, exchange=exchange)
         print('Call # {} with Response code: {}'.format(i+1, r.status_code))
         r_data = r.json()['Data']
 
-        end_time = r.json()['TimeFrom']
+        end_time = r.json()['TimeFrom']+3600
 
         this_df = pd.DataFrame(r_data)
+
+        if num_calls == 1:
+            this_df = this_df.iloc[-2000:]
 
         df = pd.concat([this_df, df])
 
@@ -58,6 +61,9 @@ def retrieve_all_data(coin,
     df.sort_values('timestamp', inplace=True)
 
     df = df[['volumeto', 'volumefrom', 'open', 'high', 'close', 'low', 'time', 'timestamp']]
+
+    # if num_calls == 1:
+    #     df = df.iloc[-limit:]
 
     df.drop_duplicates(inplace=True)
     df.reset_index(inplace=True)
