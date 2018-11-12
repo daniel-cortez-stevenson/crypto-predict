@@ -13,10 +13,13 @@ class Preprocesser(TransformerMixin):
         self.Tx, self.Ty = Tx, Ty
         self.target_col=target_col
         self.name = name
+        self.input_columns = None
+        self.engineered_columns = None
 
     @my_logger
     @my_timer
     def fit(self, X, y=None):
+        self.input_columns = X.columns.values
         return self
 
     @my_logger
@@ -46,8 +49,10 @@ class SimplePreprocessor(Preprocesser):
             return X, y
 
     def _reshape(self, X):
+        self.engineered_columns = X.columns.values
         X = np.expand_dims(X, axis=-1)
         X = np.reshape(a=X, newshape=(X.shape[0], self.Tx, -1))
+        print('int shape {}'.format(X.shape))
         X = np.swapaxes(a=X, axis1=-1, axis2=-2)
         return X
     # @my_logger
@@ -110,6 +115,7 @@ class DWTSmoothPreprocessor(Preprocesser):
             return X, y
 
     def _reshape(self, X):
+        self.engineered_columns = X.columns.values
         if len(X.shape) < 3:
             X = np.swapaxes(np.expand_dims(X, axis=-1), axis1=-2, axis2=-1)
         return X

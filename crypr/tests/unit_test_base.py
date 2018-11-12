@@ -29,7 +29,7 @@ class TestBase(unittest.TestCase):
         self.project_path = os.path.dirname(find_dotenv())
 
         self.SYM = 'ETH'
-        LAST_N_HOURS = 16000
+        LAST_N_HOURS = 14000
         self.FEATURE_WINDOW=72
         self.MOVING_AVERAGE_LAGS = [6, 12, 24, 48, 72]
         self.TARGET = 'close'
@@ -44,19 +44,19 @@ class TestBase(unittest.TestCase):
         self.predict_data = cryptocompare.retrieve_all_data(coin=self.SYM, num_hours=self.Tx + self.FEATURE_WINDOW - 1,
                                               comparison_symbol='USD', end_time=self.end_time)
 
-        self.X_shape =(13859, 1224)
-        self.y_shape =(13859, 1)
+        self.X_shape =(13858, 1224)
+        self.y_shape =(13858, 1)
 
-        self.X_sample = 705.68
-        self.y_sample = -0.2896853523991494
+        self.X_sample = 47.83
+        self.y_sample = 0.700741962077478
 
-        self.X_train_shape =(13166, 1224)
+        self.X_train_shape =(13165, 1224)
         self.X_test_shape =(693, 1224)
-        self.y_train_shape = (13166, 1)
+        self.y_train_shape = (13165, 1)
         self.y_test_shape = (693, 1)
 
-        self.X_train_sample = 88.2
-        self.y_train_sample = 0.17391304347826875
+        self.X_train_sample = 46.63
+        self.y_train_sample = 0.8046214153084374
 
         self.X_test_sample = 487.58
         self.y_test_sample = 0.9448599618077758
@@ -72,12 +72,12 @@ class TestBase(unittest.TestCase):
             'n_estimators': 20
         }
 
-        self.train_mae = 0.8968620419351427
-        self.train_rmse = 1.4206723934489915
+        self.train_mae = 0.9028942008024246
+        self.train_rmse = 1.4284612280532651
         # self.test_mae = 0.6681529049518523
         # self.test_rmse = 1.0195120681618908
 
-        self.prediction =  -0.09979289770126343
+        self.prediction = 1.6150226593017578
 
     def tearDown(self):
         # print('tearDown')
@@ -90,8 +90,8 @@ class TestBase(unittest.TestCase):
         X, y = preprocessor.fit(self.data).transform(self.data)
 
         old_shape = X.shape
-        new_shape = (old_shape[0], old_shape[1] * old_shape[2], 1)
-        X = pd.DataFrame(np.reshape(a=X, newshape=new_shape))
+        new_shape = (old_shape[0], old_shape[1] * old_shape[2])
+        X = pd.DataFrame(np.reshape(a=X, newshape=new_shape), columns=preprocessor.engineered_columns)
 
         X_sample = X.sample(1, random_state=0).values[0][0]
         y_sample = y.sample(1, random_state=0).values[0][0]
@@ -104,8 +104,8 @@ class TestBase(unittest.TestCase):
         X, y = preprocessor.fit(self.data).transform(self.data)
 
         old_shape = X.shape
-        new_shape = (old_shape[0], old_shape[1] * old_shape[2], 1)
-        X = pd.DataFrame(np.reshape(a=X, newshape=new_shape))
+        new_shape = (old_shape[0], old_shape[1] * old_shape[2])
+        X = pd.DataFrame(np.reshape(a=X, newshape=new_shape), columns=preprocessor.engineered_columns)
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.TEST_SIZE, shuffle=False)
         X_train_sample=X_train.sample(1, random_state=0).values[0][0]
@@ -122,12 +122,11 @@ class TestBase(unittest.TestCase):
         preprocessor = SimplePreprocessor(False, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS, name='Unit_Test')
 
         X, y = preprocessor.fit(self.data).transform(self.data)
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.TEST_SIZE, shuffle=False)
+        X_train, _, y_train, _ = train_test_split(X, y, test_size=self.TEST_SIZE, shuffle=False)
 
         old_shape = X_train.shape
-        new_shape = (old_shape[0], old_shape[1]*old_shape[2], 1)
-        X_train = pd.DataFrame(np.reshape(a=X_train, newshape=new_shape))
-        X_test = pd.DataFrame(np.reshape(a=X_test, newshape=new_shape))
+        new_shape = (old_shape[0], old_shape[1]*old_shape[2])
+        X_train = pd.DataFrame(np.reshape(a=X_train, newshape=new_shape), columns=preprocessor.engineered_columns)
 
         self.ta = RegressionModel(XGBRegressor(), 'Unit_Test_Regressor')
 
@@ -144,8 +143,8 @@ class TestBase(unittest.TestCase):
         X = preprocessor.fit(self.predict_data).transform(self.predict_data)
 
         old_shape = X.shape
-        new_shape = (old_shape[0], old_shape[1] * old_shape[2], 1)
-        X = pd.DataFrame(np.reshape(a=X, newshape=new_shape))
+        new_shape = (old_shape[0], old_shape[1] * old_shape[2])
+        X = pd.DataFrame(np.reshape(a=X, newshape=new_shape), columns=preprocessor.engineered_columns)
 
         self.ta = SavedRegressionModel('{}/crypr/tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl'.format(self.project_path))
         self.assertEqual(self.ta.predict(X)[0], self.prediction)
