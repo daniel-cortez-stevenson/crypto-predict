@@ -34,7 +34,7 @@ def get_prediction():
     wavelet='haar'
     target='close'
 
-    data = retrieve_all_data(coin, Tx)
+    data = retrieve_all_data(coin, Tx+1)
 
     preprocessor = DWTSmoothPreprocessor(True, target, Tx=Tx, Ty=Ty, wavelet=wavelet,
                                 name='CryptoPredict_DWTSmoothPreprocessor_{}'.format(coin))
