@@ -38,10 +38,18 @@ class SimplePreprocessor(Preprocesser):
         fe = make_features(X, self.target_col, self.moving_averages)
         if self.production:
             X = series_to_predict_matrix(fe, n_in=self.Tx, dropnan=True)
+            X = self._reshape(X)
             return X
         else:
             X, y = data_to_supervised(fe, self.Tx, self.Ty)
+            X = self._reshape(X)
             return X, y
+
+    def _reshape(self, X):
+        X = np.expand_dims(X, axis=-1)
+        X = np.reshape(a=X, newshape=(X.shape[0], self.Tx, -1))
+        X = np.swapaxes(a=X, axis1=-1, axis2=-2)
+        return X
     # @my_logger
     # @my_timer
     # def save_output(self, path):
@@ -93,12 +101,15 @@ class DWTSmoothPreprocessor(Preprocesser):
         if self.production:
             X = series_to_predict_matrix(fe['target'].tolist(), n_in=self.Tx, dropnan=True)
             X = discrete_wavelet_transform_smooth(X, wavelet=self.wavelet)
-            if len(X.shape) < 3:
-                X = np.swapaxes(np.expand_dims(X, axis=-1), axis1=-2, axis2=-1)
+            X = self._reshape(X)
             return X
         else:
             X, y = data_to_supervised(input_df=fe[['target']], Tx=self.Tx, Ty=self.Ty)
             X = discrete_wavelet_transform_smooth(X, wavelet=self.wavelet)
-            if len(X.shape) < 3:
-                X = np.swapaxes(np.expand_dims(X, axis=-1), axis1=-2, axis2=-1)
+            X = self._reshape(X)
             return X, y
+
+    def _reshape(self, X):
+        if len(X.shape) < 3:
+            X = np.swapaxes(np.expand_dims(X, axis=-1), axis1=-2, axis2=-1)
+        return X
