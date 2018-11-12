@@ -14,7 +14,7 @@ def retrieve_hourly_data(coin,
         'tsym': comparison_symbol.upper(),
         'limit': limit,
         'toTs': to_time,
-        'e':exchange
+        'e': exchange
     }
 
     url = "https://min-api.cryptocompare.com/data/histohour"
@@ -36,15 +36,15 @@ def retrieve_all_data(coin,
     else:
         limit = 2000
         num_calls = np.int(np.ceil(num_hours / limit))
-        last_limit = num_hours % limit
+        last_limit = num_hours % limit if num_hours % limit > 0 else 2000
 
-
+    print('Will call API {} times'.format(num_calls))
     for i in range(num_calls):
         if i == num_calls -1:
             limit = last_limit
 
         r = retrieve_hourly_data(coin=coin, comparison_symbol=comparison_symbol, to_time=end_time, limit=limit, exchange=exchange)
-
+        print('Call # {} with Response code: {}'.format(i+1, r.status_code))
         r_data = r.json()['Data']
 
         end_time = r.json()['TimeFrom']
