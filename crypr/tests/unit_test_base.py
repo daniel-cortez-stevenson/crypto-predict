@@ -134,8 +134,8 @@ class TestBase(unittest.TestCase):
         self.ta.fit(X_train, y_train)
         train_pred = self.ta.predict(X_train)
         rmse, mae = self.ta.evaluate(y_pred=train_pred, y_true=y_train)
-        self.assertEqual(rmse, self.train_rmse, 2)
-        self.assertEqual(mae, self.train_mae, 2)
+        self.assertAlmostEqual(rmse, self.train_rmse, 1)
+        self.assertAlmostEqual(mae, self.train_mae, 1)
 
     def test_predict(self):
         np.random.seed(31337)
