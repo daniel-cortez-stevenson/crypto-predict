@@ -64,9 +64,9 @@ if __name__ == '__main__':
     wavelet='haar'
 
     global eth_model
-    eth_model = SavedRegressionModel('models/{}_smooth_{}x{}_{}_{}.h5'.format(model_type, 1, 72, wavelet, 'ETH'))
+    eth_model = SavedRegressionModel('/app/models/{}_smooth_{}x{}_{}_{}.h5'.format(model_type, 1, 72, wavelet, 'ETH'))
 
     global btc_model
-    btc_model = SavedRegressionModel('models/{}_smooth_{}x{}_{}_{}.h5'.format(model_type, 1, 72, wavelet, 'BTC'))
+    btc_model = SavedRegressionModel('/app/models/{}_smooth_{}x{}_{}_{}.h5'.format(model_type, 1, 72, wavelet, 'BTC'))
 
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=False)

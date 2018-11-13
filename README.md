@@ -49,52 +49,52 @@ Project Organization
 ------------
 
     ├── LICENSE
-    ├── Makefile           <- Makefile with commands like `make data` or `make models`
+    ├── Makefile                <- Makefile with commands like `make data` or `make models`
     ├── README.md
     ├── setup.py
     ├── requirements.txt   
     ├── data
-    │   ├── external       <- Data from 3rd party sources.
-    │   ├── interim        <- Intermediate data.
-    │   ├── processed      <- Featurized data.
-    │   └── raw            <- Cryptocompare data is saved here.
+    │   ├── external            <- Data from 3rd party sources.
+    │   ├── interim             <- Intermediate data.
+    │   ├── processed           <- Featurized data.
+    │   └── raw                 <- Cryptocompare data is saved here.
     │
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
+    ├── models                  <- Trained and serialized models, model predictions, or model summaries
     │
-    ├── notebooks          <- Jupyter notebooks.
+    ├── notebooks               <- Jupyter notebooks.
     │
-    ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
+    ├── references              <- Data dictionaries, manuals, and all other explanatory materials.
     │
-    ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting                   
+    ├── reports                 <- Generated analysis as HTML, PDF, LaTeX, etc.
+    │   └── figures             <- Generated graphics and figures to be used in reporting                   
     │
     ├── crypr
     │   │
-    │   ├── base           <- main classes for preprocessing and prediction
+    │   ├── base                <- main classes for preprocessing and prediction
     │   │
-    │   ├── data           <- Functions to download or generate data
+    │   ├── data                <- Functions to download or generate data
     │   │  
     │   │
-    │   ├── features       <- Functions to turn raw data into features for modeling
+    │   ├── features            <- Functions to turn raw data into features for modeling
     │   │  
     │   │
-    │   ├── models         <- Functions to train models and then use trained models to make
-    │   │                       predictions
+    │   ├── models              <- Functions to train models and then use trained models to make predictions
+    │   │                       
     │   │  
-    │   ├── visualization  <- Functions to create exploratory and results oriented visualizations
+    │   ├── visualization       <- Functions to create exploratory and results oriented visualizations
     │   │   
     │   │
-    │   ├── tests   <- unit_tests and unit_main scripts.
+    │   ├── tests               <- unit_tests and unit_main scripts.
     │   │
-    │   └── app.py <- the Flask code used to serve the prediction API
+    │   └── api                 <- the Flask script, classes, & helper functions used to serve the prediction API
     │ 
-    ├── docker  <- stores Dockerfiles for various deployments.
+    ├── docker                  <- stores Dockerfiles for various deployments.
     │
-    ├── .dockerignore   <- for all Dockerfiles. Ignores sensitive and large files.
+    ├── .dockerignore           <- for all Dockerfiles. Ignores sensitive and large files.
     │
     ├── Dockerfile.dockerhub    <- Dockerfile used for hub.docker.com automated build
     │
-    ├── .travis.yml     <- Automated continuous integration config
+    ├── .travis.yml             <- Automated continuous integration config
 --------
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
