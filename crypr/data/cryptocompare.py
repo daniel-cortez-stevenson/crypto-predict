@@ -52,7 +52,7 @@ def retrieve_all_data(coin,
         this_df = pd.DataFrame(r_data)
 
         if num_calls == 1:
-            this_df = this_df.iloc[-2000:]
+            this_df = this_df.iloc[-limit:]
 
         df = pd.concat([this_df, df])
 

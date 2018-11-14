@@ -17,7 +17,7 @@ class TestCryptocompare(unittest.TestCase):
         self.end_to_time = (np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype('uint32')
         self.limit = 2000
         self.exchange = 'CCCAGG'
-        self.num_hours = [2000, 4000]
+        self.num_hours = [100, 2000, 4000]
         self.seconds_between_obs = 3600
         self.acceptable_codes = [200]
 
