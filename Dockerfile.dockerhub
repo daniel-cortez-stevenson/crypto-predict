@@ -21,4 +21,4 @@ EXPOSE 5000
 HEALTHCHECK --interval=10s --timeout=5s \
   CMD curl -f http://0.0.0.0:5000 || exit 1
 
-CMD ["python", "/app/crypr/api/app.py"]
+CMD ["python", "-c", "exec(open('/app/crypr/api/app.py').read())"]
