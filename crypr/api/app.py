@@ -1,11 +1,10 @@
 #!flask/bin/python
-from flask import Flask, jsonify, abort, request, Response
-import numpy as np
+from flask import Flask, abort, request
 from crypr.base.models import SavedRegressionModel
 from crypr.base.preprocessors import DWTSmoothPreprocessor
 from crypr.data.cryptocompare import retrieve_all_data
-
-import pandas as pd
+from crypr.api.json import PredictionFormatter
+from dotenv import find_dotenv, load_dotenv
 import os
 
 app = Flask(__name__)
@@ -14,6 +13,7 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return "Hello, World!"
+
 
 @app.route('/predict', methods=['GET'])
 def get_prediction():
@@ -49,24 +49,32 @@ def get_prediction():
         abort(404)
 
     # If a multi-output model, take the last prediction - which will be pct change.
+    print(prediction)
     if len(prediction) == 2:
-        prediction=prediction[1]
-
-    last_target = data[target].iloc[-1]
-    predicted_price = np.squeeze(last_target+prediction[0]/100*last_target)
-    last_time = data['timestamp'].iloc[-1]
-    predict_times = [last_time + pd.Timedelta(hours=1*(ix+1)) for ix in range(Ty)]
-
-    return jsonify({'{}+00:00'.format(predict_times[0]): '{} USD'.format(predicted_price)})
+        prediction = prediction[1][0]
+    else:
+        prediction = prediction[0]
+    print('pred is {}'.format(prediction))
+    formatter = PredictionFormatter(
+        prediction=prediction,
+        last_value=data[target].iloc[-1],
+        last_time=data['timestamp'].iloc[-1]
+    )
+    print('format of resp is: {}'.format(formatter._format()))
+    return formatter.respond()
+    # return jsonify({'{}+00:00'.format(predict_times[0]): '{} USD'.format(predicted_price)})
 
 if __name__ == '__main__':
     model_type='ae_lstm'
     wavelet='haar'
 
+    load_dotenv(find_dotenv())
+    base_path = os.path.dirname(find_dotenv())
+
     global eth_model
-    eth_model = SavedRegressionModel('/app/models/{}_smooth_{}x{}_{}_{}.h5'.format(model_type, 1, 72, wavelet, 'ETH'))
+    eth_model = SavedRegressionModel('{}/models/{}_smooth_{}x{}_{}_{}.h5'.format(base_path, model_type, 1, 72, wavelet, 'ETH'))
 
     global btc_model
-    btc_model = SavedRegressionModel('/app/models/{}_smooth_{}x{}_{}_{}.h5'.format(model_type, 1, 72, wavelet, 'BTC'))
+    btc_model = SavedRegressionModel('{}/models/{}_smooth_{}x{}_{}_{}.h5'.format(base_path, model_type, 1, 72, wavelet, 'BTC'))
 
     app.run(host='0.0.0.0', port=5000, debug=False, threaded=False)
