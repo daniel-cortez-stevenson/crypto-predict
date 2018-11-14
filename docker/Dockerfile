@@ -14,6 +14,8 @@ RUN pip install -e .
 
 ADD models /app/models
 
+ADD docker/.env_docker /app/.env
+
 EXPOSE 5000
 
 HEALTHCHECK --interval=10s --timeout=5s \
