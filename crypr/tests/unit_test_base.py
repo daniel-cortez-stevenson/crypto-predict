@@ -77,7 +77,7 @@ class TestBase(unittest.TestCase):
         # self.test_mae = 0.6681529049518523
         # self.test_rmse = 1.0195120681618908
 
-        self.prediction = 1.6150226593017578
+        self.prediction = 1.2296733856201172
 
     def tearDown(self):
         # print('tearDown')
