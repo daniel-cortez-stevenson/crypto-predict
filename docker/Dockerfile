@@ -1,4 +1,4 @@
-FROM python:3.5-slim-jessie
+FROM python:3.5-jessie
 
 WORKDIR /app
 
