@@ -51,6 +51,7 @@ Future Directions
 
 Project Organization
 ------------
+```bash
 crypr/
 ├── Dockerfile.dockerhub        # For hub.docker.com automated build hook
 ├── LICENSE
@@ -108,6 +109,5 @@ crypr/
 ├── references/
 └── reports/
     └── figures/
-
-
+```
 --------
