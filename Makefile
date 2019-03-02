@@ -1,14 +1,13 @@
-.PHONY: requirements clean lint data features models
+.PHONY: update_install install install_dev clean clean_pyc clean_test clean_build lint run_docker
 
 #################################################################################
 # GLOBALS                                                                       #
 #################################################################################
 
 PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
-PROFILE = default
-PROJECT_NAME = crypto-predict
+PROJECT_NAME = crypto_predict
 PYTHON_INTERPRETER = python3
+PYTHON_VERSION = 3.5
 
 ifeq (,$(shell which conda))
 HAS_CONDA=False
@@ -20,70 +19,65 @@ endif
 # COMMANDS                                                                      #
 #################################################################################
 
-## Install Python Dependencies and Jupyter ipykernel
-requirements: test_environment
+update_install:
 	pip install -U pip setuptools wheel
-	pip install -U -r requirements.txt
-	pip install -e .
+
+install: update_install
+	pip install -U .
+
+install_dev: update_install
+	pip install -U -e . -r requirements.txt
 	@echo ">>> Creating Jupyter Notebook kernel -> Python ($(PROJECT_NAME))"
 	$(PYTHON_INTERPRETER) -m ipykernel install --user --name $(PROJECT_NAME) --display-name "Python ($(PROJECT_NAME))"
 
+test: clean_test
+	coverage run setup.py test
 
-## Make Dataset
-data: requirements
-	$(PYTHON_INTERPRETER) scripts/data/make_dataset.py
+run_docker: clean
+	docker build -f ./docker/Dockerfile -t crypr-api .
+	docker run -p 5000:5000 crypr-api
 
+clean: clean_pyc clean_test clean_build
 
-## Make Features
-features: data
-	$(PYTHON_INTERPRETER) scripts/features/make_features.py
+clean_build:
+	rm -fr build/
+	rm -fr dist/
+	rm -fr .eggs/
+	find . -name '*.egg-info' -exec rm -fr {} +
+	find . -name '*.egg' -exec rm -f {} +
 
+clean_pyc:
+	find . -name '*.pyc' -exec rm -f {} +
+	find . -name '*.pyo' -exec rm -f {} +
+	find . -name '*~' -exec rm -f {} +
+	find . -name '__pycache__' -exec rm -fr {} +
 
-## Make Models
-models: features
-	$(PYTHON_INTERPRETER) scripts/models/make_train_models.py
+clean_test:
+	rm -fr .tox/
+	rm -f .coverage
+	rm -fr .pytest_cache
 
-
-## Delete all compiled Python files
-clean:
-	find . -type f -name "*.py[co]" -delete
-	find . -type d -name "__pycache__" -delete
-
-
-## Lint using flake8
 lint:
-	flake8 --max-line-length 119 crypr
-	flake8 --max-line-length 119 scripts
+	$(PYTHON_INTERPRETER) -m flake8 --max-line-length 89 ./crypr
+	$(PYTHON_INTERPRETER) -m flake8 --max-line-length 89 ./scripts
 
+dist: clean
+	$(PYTHON_INTERPRETER) setup.py sdist
+	$(PYTHON_INTERPRETER) setup.py bdist_wheel
+	ls -l dist
 
-## Set up python interpreter environment
 create_environment:
 ifeq (True,$(HAS_CONDA))
-		@echo ">>> Detected conda, creating conda environment."
-ifeq (3,$(findstring 3,$(PYTHON_INTERPRETER)))
-	conda create --name $(PROJECT_NAME) python=3.5
+	@echo ">>> Detected conda, creating conda environment."
+	conda create -y --name $(PROJECT_NAME) python=$(PYTHON_VERSION)
+	@echo ">>> New conda env created. Activate with:\nconda activate $(PROJECT_NAME)"
 else
-	conda create --name $(PROJECT_NAME) python=2.7
-endif
-		@echo ">>> New conda env created. Activate with:\nsource activate $(PROJECT_NAME)"
-else
-	@pip install -q virtualenv virtualenvwrapper
+	pip install -q virtualenv virtualenvwrapper
 	@echo ">>> Installing virtualenvwrapper if not already intalled.\nMake sure the following lines are in shell startup file\n\
 	export WORKON_HOME=$$HOME/.virtualenvs\nexport PROJECT_HOME=$$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\n"
-	@bash -c "source `which virtualenvwrapper.sh`;mkvirtualenv $(PROJECT_NAME) --python=$(PYTHON_INTERPRETER)"
+	bash -c "source `which virtualenvwrapper.sh`;mkvirtualenv $(PROJECT_NAME) --python=$(PYTHON_INTERPRETER)"
 	@echo ">>> New virtualenv created. Activate with:\nworkon $(PROJECT_NAME)"
 endif
-
-## Test python environment is setup correctly
-test_environment:
-	$(PYTHON_INTERPRETER) test_environment.py
-
-
-#################################################################################
-# PROJECT RULES                                                                 #
-#################################################################################
-
-
 
 #################################################################################
 # Self Documenting Commands                                                     #

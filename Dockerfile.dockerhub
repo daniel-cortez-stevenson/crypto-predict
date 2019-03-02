@@ -1,16 +1,14 @@
-FROM python:3.5.5-jessie
+FROM python:3.5-slim-jessie
 
 WORKDIR /app
 
-ADD requirements.txt /app/requirements.txt
-
-# Install packages
+# Update pip
 RUN pip install -U pip setuptools wheel
-RUN pip install -U -r requirements.txt
 
+# Install crypr
 ADD crypr /app/crypr
 ADD setup.py /app/setup.py
-RUN pip install -e .
+RUN pip install -U .
 
 ADD models /app/models
 

@@ -22,17 +22,17 @@ install:
   # Install crypr
   - mv .env_template .env
   - make create_environment
-  - source activate crypto-predict
-  - make requirements
-  - python ./scripts/data/make_dataset.py --hours 1000
-  - python ./scripts/features/make_features.py
-  - python ./scripts/models/make_train_models.py --epochs 1
+  - conda activate crypto_predict
+  - make install_dev
+  - crypr-data --hours 1000
+  - crypr-features
+  - crypr-models --epochs 1
   # Deploy crypr API
   - docker build -f ./docker/Dockerfile -t crypr-api .
   - CONTAINER_ID=$(docker run -d -p 5000:5000 crypr-api)
   - sh ./docker/wait_for_healthy.sh $CONTAINER_ID
 script:
   - docker ps | grep -q crypr-api
-  - coverage run --source=crypr setup.py test
+  - make test
 after_success:
   - coveralls

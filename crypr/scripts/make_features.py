@@ -9,6 +9,12 @@ from sklearn.model_selection import train_test_split
 
 
 def main():
+    log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    logging.basicConfig(level=logging.INFO, format=log_fmt)
+
+    load_dotenv(find_dotenv())
+    project_path = os.path.dirname(find_dotenv())
+
     logger = logging.getLogger(__name__)
     logger.info('Making features from raw data for RNN Models ...')
 
@@ -34,12 +40,3 @@ def main():
         np.save(arr=X_test, file='{}/X_test_{}_{}_smooth_{}'.format(output_path, SYM, WAVELET, Tx))
         np.save(arr=y_train, file='{}/y_train_{}_{}_smooth_{}'.format(output_path, SYM, WAVELET, Tx))
         np.save(arr=y_test, file='{}/y_test_{}_{}_smooth_{}'.format(output_path, SYM, WAVELET, Tx))
-
-
-if __name__ == '__main__':
-    log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    logging.basicConfig(level=logging.INFO, format=log_fmt)
-
-    load_dotenv(find_dotenv())
-    project_path = os.path.dirname(find_dotenv())
-    main()

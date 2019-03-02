@@ -14,6 +14,12 @@ from keras.callbacks import TensorBoard
 @click.option("-e", "--epochs", default=10, type=click.INT,
               help="Number of epochs to run for each model.")
 def main(epochs):
+    log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    logging.basicConfig(level=logging.INFO, format=log_fmt)
+
+    load_dotenv(find_dotenv())
+    project_path = os.path.dirname(find_dotenv())
+    
     logger = logging.getLogger(__name__)
     logger.info('Creating and Training RNN Models...')
 
@@ -71,13 +77,3 @@ def main(epochs):
         model.save_estimator(path='{}/{}_smooth_{}x{}_{}_{}.h5'.format(
             output_path, model_type, num_channels, Tx, WAVELET, SYM)
         )
-
-
-if __name__ == '__main__':
-    log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    logging.basicConfig(level=logging.INFO, format=log_fmt)
-
-    load_dotenv(find_dotenv())
-    project_path = os.path.dirname(find_dotenv())
-
-    main()

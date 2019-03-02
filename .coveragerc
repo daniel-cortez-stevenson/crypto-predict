@@ -1,0 +1,5 @@
+[run]
+source = crypr 
+branch = True
+data_file = .coverage
+
