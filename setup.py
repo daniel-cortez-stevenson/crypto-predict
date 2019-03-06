@@ -18,7 +18,6 @@ setup(
         'click>=0.7.0',
         'Flask>=1.0.2',
         'Keras>=2.2.2',
-        'matplotlib>=2.2.2',
         'numpy<=1.14.5,>=1.13.3',
         'pandas>=0.23.1',
         'python-dotenv>=0.8.2',
@@ -26,10 +25,7 @@ setup(
         'requests>=2.19.1',
         'scikit-learn>=0.19.2',
         'scipy>=1.1.0',
-        'seaborn>=0.9.0',
-        'tensorboard>=1.12.0',
         'tensorflow>=1.8.0',
-        'xgboost>=0.7.2',
     ],
     setup_requires=[
         'pytest-runner>=2.0,<3dev',

@@ -90,3 +90,6 @@ notebooks/logs/
 # Model output
 !models/.gitkeep
 models/*
+
+# secrets
+*.secret

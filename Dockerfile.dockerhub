@@ -1,22 +1,26 @@
-FROM python:3.5-jessie
+ARG PYTHON_VERSION=3.5
+
+FROM python:${PYTHON_VERSION}-slim-stretch
+
+RUN apt-get update && apt-get install -y curl
 
 WORKDIR /app
 
-# Update pip
-RUN pip install -U pip setuptools wheel
+ADD crypr crypr
+ADD setup.py setup.py
 
-# Install crypr
-ADD crypr /app/crypr
-ADD setup.py /app/setup.py
-RUN pip install -U .
+RUN pip install -U pip setuptools wheel \
+        && pip install -U . \
+        && rm -rf /root/.cache/pip/*
 
-ADD models /app/models
-
-ADD docker/.env_docker /app/.env
+ADD models models
+ADD docker/.env_docker .env
 
 EXPOSE 5000
 
 HEALTHCHECK --interval=10s --timeout=5s \
   CMD curl -f http://0.0.0.0:5000 || exit 1
 
-CMD ["python", "-c", "exec(open('/app/crypr/api/app.py').read())"]
+ENTRYPOINT ["python"]
+
+CMD ["-c", "exec(open('crypr/api/app.py').read())"]
