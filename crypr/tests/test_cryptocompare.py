@@ -1,5 +1,4 @@
-''' Check That Preprocessors are Functioning Correctly '''
-
+"""Check That Preprocessors are Functioning Correctly"""
 import unittest
 import numpy as np
 import datetime
@@ -7,10 +6,9 @@ from crypr import cryptocompare
 
 
 class TestCryptocompare(unittest.TestCase):
-    ''' Base class for testing cryptocompare API calls '''
-
+    """Base class for testing cryptocompare API calls"""
     def setUp(self):
-        ''' Define some unique data for validation '''
+        """Define some unique data for validation"""
         self.columns = np.array(['volumeto', 'volumefrom', 'open', 'high', 'close', 'low', 'time', 'timestamp'])
         self.coin = 'BTC'
         self.comparison_sym = 'USD'
@@ -22,7 +20,7 @@ class TestCryptocompare(unittest.TestCase):
         self.acceptable_codes = [200]
 
     def tearDown(self):
-        # ''' Destroy unique data '''
+        """Destroy unique data"""
         self.columns = None
         self.coin = None
         self.comparison_sym = None
@@ -51,20 +49,25 @@ class TestCryptocompare(unittest.TestCase):
 
 
 class TestRetrieveHourlyData(TestCryptocompare):
-
     def runTest(self):
-        r = cryptocompare.retrieve_hourly_data(coin=self.coin, comparison_symbol=self.comparison_sym,
-                                               to_time=self.end_to_time, limit=self.limit, exchange=self.exchange)
+        r = cryptocompare.retrieve_hourly_data(
+            coin=self.coin,
+            comparison_symbol=self.comparison_sym,
+            to_time=self.end_to_time,
+            limit=self.limit,
+            exchange=self.exchange)
         self.responseCheck(r)
 
 
 class TestRetrieveAllData(TestCryptocompare):
-
     def runTest(self):
         for hours in self.num_hours:
-            data = cryptocompare.retrieve_all_data(coin=self.coin, num_hours=hours,
-                                                   comparison_symbol=self.comparison_sym,
-                                                   exchange=self.exchange, end_time=self.end_to_time)
+            data = cryptocompare.retrieve_all_data(
+                coin=self.coin,
+                num_hours=hours,
+                comparison_symbol=self.comparison_sym,
+                exchange=self.exchange,
+                end_time=self.end_to_time)
             self.shapeCheck(data=data, num_hours=hours)
             self.columnsCheck(data=data)
             self.ascendingUniqueCheck(data=data)

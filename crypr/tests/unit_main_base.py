@@ -1,15 +1,16 @@
-from sklearn.model_selection import train_test_split
+"""Solution script for other tests"""
 import datetime
-from crypr.cryptocompare import retrieve_all_data
-from crypr.build import *
-from crypr.models import RegressionModel, SavedRegressionModel
-from crypr.preprocessors import SimplePreprocessor
 from dotenv import load_dotenv, find_dotenv
 import os
-
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
 from xgboost import XGBRegressor
+from crypr.cryptocompare import retrieve_all_data
+from crypr.models import RegressionModel, SavedRegressionModel
+from crypr.preprocessors import SimplePreprocessor
 
-# The solution
+
 if __name__ == '__main__':
     np.random.seed(31337)
 
@@ -25,11 +26,19 @@ if __name__ == '__main__':
     load_dotenv(find_dotenv())
     project_path = os.path.dirname(find_dotenv())
 
-    data = retrieve_all_data(coin=SYM, num_hours=LAST_N_HOURS, comparison_symbol='USD',
-                             end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype(
-                                 'uint32'))
+    data = retrieve_all_data(
+        coin=SYM,
+        num_hours=LAST_N_HOURS,
+        comparison_symbol='USD',
+        end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype('uint32'))
 
-    preprocessor = SimplePreprocessor(production=False, target_col=TARGET, Tx=Tx, Ty=Ty, moving_averages=MOVING_AVERAGE_LAGS, name='unit_test')
+    preprocessor = SimplePreprocessor(
+        production=False,
+        target_col=TARGET,
+        Tx=Tx,
+        Ty=Ty,
+        moving_averages=MOVING_AVERAGE_LAGS,
+        name='unit_test')
     X, y = preprocessor.fit(data).transform(data)
 
     old_shape = X.shape
@@ -77,11 +86,18 @@ if __name__ == '__main__':
 
     ta = SavedRegressionModel('{}/crypr/tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl'.format(project_path))
 
-    new_data = retrieve_all_data(SYM, Tx + FEATURE_WINDOW - 1,
-                                 end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype(
-                                 'uint32'))
-    preprocessor = SimplePreprocessor(production=True, target_col=TARGET, Tx=Tx, Ty=Ty, moving_averages=[6, 12, 24, 48, 72],
-                                name='Unit_New_Prediction_Preprocessor')
+    new_data = retrieve_all_data(
+        SYM,
+        Tx + FEATURE_WINDOW - 1,
+        end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype('uint32'))
+
+    preprocessor = SimplePreprocessor(
+        production=True,
+        target_col=TARGET,
+        Tx=Tx,
+        Ty=Ty,
+        moving_averages=[6, 12, 24, 48, 72],
+        name='Unit_New_Prediction_Preprocessor')
     X_new = preprocessor.fit(new_data).transform(new_data)
 
     old_shape = X_new.shape

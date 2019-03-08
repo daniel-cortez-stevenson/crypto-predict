@@ -1,28 +1,29 @@
-''' Check That Preprocessors are Functioning Correctly '''
-
+"""Check That Preprocessors are Functioning Correctly"""
 import unittest
+import pandas as pd
+import numpy as np
 import os
 from dotenv import load_dotenv, find_dotenv
-from crypr.preprocessors import *
+from crypr.preprocessors import SimplePreprocessor, DWTSmoothPreprocessor
 
 
 class TestPreprocessor(unittest.TestCase):
-    ''' Base class for testing preprocessors '''
-
+    """Base class for testing preprocessors"""
     def setUp(self):
-        ''' Define some unique data for validation '''
+        """Define some unique data for validation"""
         load_dotenv(find_dotenv())
-        project_path = os.path.dirname(find_dotenv())
-        self.data = pd.read_csv('{}/crypr/tests/test_raw_btc.csv'.format(project_path), index_col=0)
+        self.project_path = os.path.dirname(find_dotenv())
+        self.data_dir = os.path.join(self.project_path, 'crypr', 'tests', 'data')
+        self.data = pd.read_csv(os.path.join(self.data_dir, 'test_raw_btc.csv'), index_col=0)
         self.Tx = 72
         self.Ty = 1
         self.target_col = 'close'
         self.wavelet = 'haar'
-        self.moving_averages = [6,12,24,48,72]
+        self.moving_averages = [6, 12, 24, 48, 72]
         self.dummy_arr_2d = np.reshape(np.arange(5*4*3), (5, 12))
 
     def tearDown(self):
-        ''' Destroy unique data '''
+        """Destroy unique data"""
         self.data = None
         self.Tx = None
         self.Ty = None
@@ -44,7 +45,6 @@ class TestPreprocessor(unittest.TestCase):
 
 
 class TestDWTSmoothPreprocessor(TestPreprocessor):
-
     def runTest(self):
         preprocessor = DWTSmoothPreprocessor(production=False, target_col=self.target_col, wavelet=self.wavelet,
                                              Tx=self.Tx, Ty=self.Ty, name='TestDWTSmoothPreprocessor')
@@ -60,7 +60,6 @@ class TestDWTSmoothPreprocessor(TestPreprocessor):
 
 
 class TestSimplePreprocessor(TestPreprocessor):
-
     def runTest(self):
         preprocessor = SimplePreprocessor(production=False, target_col=self.target_col,
                                           moving_averages=self.moving_averages,
