@@ -3,9 +3,9 @@ import connexion
 import logging
 from flask import abort
 import pandas as pd
-from crypr.base.models import SavedKerasTensorflowModel
-from crypr.base.preprocessors import DWTSmoothPreprocessor
-from crypr.data.cryptocompare import retrieve_all_data
+from crypr.models import SavedKerasTensorflowModel
+from crypr.preprocessors import DWTSmoothPreprocessor
+from crypr.cryptocompare import retrieve_all_data
 from dotenv import find_dotenv, load_dotenv
 import os
 

@@ -2,7 +2,7 @@
 import click
 import logging
 from dotenv import find_dotenv, load_dotenv
-from crypr.data import cryptocompare
+from crypr import cryptocompare
 import os
 
 @click.command()

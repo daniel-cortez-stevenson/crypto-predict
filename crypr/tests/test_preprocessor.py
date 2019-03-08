@@ -1,10 +1,9 @@
 ''' Check That Preprocessors are Functioning Correctly '''
 
 import unittest
-import pandas as pd
 import os
 from dotenv import load_dotenv, find_dotenv
-from crypr.base.preprocessors import *
+from crypr.preprocessors import *
 
 
 class TestPreprocessor(unittest.TestCase):

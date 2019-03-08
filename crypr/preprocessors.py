@@ -1,9 +1,8 @@
-from crypr.tests.unit_decorator import my_logger, my_timer
-from crypr.features.build import make_features, series_to_predict_matrix, data_to_supervised
+from crypr.decorator import my_logger, my_timer
+from crypr.build import make_features, series_to_predict_matrix, data_to_supervised
 from sklearn.base import TransformerMixin
-from crypr.features.build import continuous_wavelet_transform, make_single_feature, discrete_wavelet_transform_smooth
+from crypr.build import continuous_wavelet_transform, make_single_feature, discrete_wavelet_transform_smooth
 import numpy as np
-import pandas as pd
 
 
 class Preprocesser(TransformerMixin):

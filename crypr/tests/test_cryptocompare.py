@@ -3,7 +3,7 @@
 import unittest
 import numpy as np
 import datetime
-from crypr.data import cryptocompare
+from crypr import cryptocompare
 
 
 class TestCryptocompare(unittest.TestCase):

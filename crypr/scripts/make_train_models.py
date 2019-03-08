@@ -2,10 +2,10 @@
 import click
 import logging
 from dotenv import find_dotenv, load_dotenv
-from crypr.base.models import RegressionModel
+from crypr.models import RegressionModel
 import os
 import numpy as np
-from crypr.models.zoo import build_ae_lstm
+from crypr.zoo import build_ae_lstm
 from keras.optimizers import Adam
 from keras.callbacks import TensorBoard
 

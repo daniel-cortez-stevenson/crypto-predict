@@ -3,10 +3,10 @@ from dotenv import find_dotenv, load_dotenv
 import os
 from sklearn.model_selection import train_test_split
 import datetime
-from crypr.data import cryptocompare
-from crypr.features.build import *
-from crypr.base.models import RegressionModel, SavedRegressionModel
-from crypr.base.preprocessors import SimplePreprocessor
+from crypr import cryptocompare
+from crypr.build import *
+from crypr.models import RegressionModel, SavedRegressionModel
+from crypr.preprocessors import SimplePreprocessor
 from xgboost import XGBRegressor
 
 class TestBase(unittest.TestCase):
@@ -39,10 +39,10 @@ class TestBase(unittest.TestCase):
         self.end_time = (np.datetime64(datetime.datetime(2018,6,27)).astype('uint64') / 1e6).astype('uint32')
 
         self.data = cryptocompare.retrieve_all_data(coin=self.SYM, num_hours=LAST_N_HOURS, comparison_symbol='USD',
-                                 end_time=self.end_time)
+                                                    end_time=self.end_time)
 
         self.predict_data = cryptocompare.retrieve_all_data(coin=self.SYM, num_hours=self.Tx + self.FEATURE_WINDOW - 1,
-                                              comparison_symbol='USD', end_time=self.end_time)
+                                                            comparison_symbol='USD', end_time=self.end_time)
 
         self.X_shape =(13852, 1224)
         self.y_shape =(13852, 1)

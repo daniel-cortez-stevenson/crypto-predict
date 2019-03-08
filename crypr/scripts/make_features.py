@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from dotenv import find_dotenv, load_dotenv
-from crypr.base.preprocessors import DWTSmoothPreprocessor
+from crypr.preprocessors import DWTSmoothPreprocessor
 import os
 import numpy as np
 import pandas as pd

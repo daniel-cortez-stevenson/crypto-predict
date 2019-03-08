@@ -1,10 +1,10 @@
-from crypr.tests.unit_decorator import my_logger, my_timer
+from crypr.decorator import my_logger, my_timer
 import tensorflow as tf
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.base import BaseEstimator, RegressorMixin
 from keras.models import load_model
-from crypr.util.io import load_from_pickle
+from crypr.util import load_from_pickle
 
 
 class Model(BaseEstimator):

@@ -1,6 +1,6 @@
 import unittest
-from crypr.base.models import RegressionModel
-from crypr.models.zoo import *
+from crypr.models import RegressionModel
+from crypr.zoo import *
 
 
 class TestModel(unittest.TestCase):
