@@ -1,4 +1,5 @@
 from crypr.tests.unit_decorator import my_logger, my_timer
+import tensorflow as tf
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.base import BaseEstimator, RegressorMixin
@@ -13,12 +14,6 @@ class Model(BaseEstimator):
     def __init__(self, estimator, name):
         self.estimator = estimator
         self.name = name
-
-    # @my_logger
-    # @my_timer
-    # def set_parameters(self, parameters):
-    #     self.parameters = parameters
-    #     self.estimator.set_params(**self.parameters)
 
     @my_logger
     @my_timer
@@ -70,3 +65,19 @@ class SavedRegressionModel(RegressionModel):
             self.estimator = load_model(self.path)
         else:
             print('WARNING: File Extension {} not supported.'.format(self.ext))
+
+
+class SavedKerasTensorflowModel(object):
+    @my_logger
+    @my_timer
+    def __init__(self, path):
+        self.path = path
+        self.estimator = None
+        self.graph = None
+        self.load()
+
+    @my_logger
+    @my_timer
+    def load(self):
+        self.estimator = load_model(self.path)
+        self.graph = tf.get_default_graph()

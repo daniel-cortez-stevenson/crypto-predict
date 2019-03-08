@@ -15,6 +15,7 @@ setup(
     author_email='daniel.cortez.stevenson@gmail.com',
     license='MIT',
     install_requires=[
+        'connexion==2.2.0',
         'click>=0.7.0',
         'Flask>=1.0.2',
         'Keras>=2.2.2',

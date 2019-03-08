@@ -15,12 +15,13 @@ RUN pip install -U pip setuptools wheel \
 
 ADD models models
 ADD docker/.env_docker .env
+ADD api api
 
 EXPOSE 5000
 
 HEALTHCHECK --interval=10s --timeout=5s \
-  CMD curl -f http://0.0.0.0:5000 || exit 1
+  CMD curl -f http://0.0.0.0:5000/greeting || exit 1
 
-ENTRYPOINT ["python"]
+ENTRYPOINT ["connexion"]
 
-CMD ["-c", "exec(open('crypr/api/app.py').read())"]
+CMD ["run", "api/swagger.yaml", "-v"]

@@ -6,7 +6,7 @@ from crypr.data import cryptocompare
 import os
 
 @click.command()
-@click.option("-h", "--hours", default=46000, type=click.INT,
+@click.option("-h", "--hours", default=6000, type=click.INT,
               help="Number of hours of data to download for each coin.")
 def main(hours):
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

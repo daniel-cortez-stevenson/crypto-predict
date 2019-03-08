@@ -131,7 +131,7 @@ def discrete_wavelet_transform_smooth(input_df, wavelet):
         cA, cD = pywt.dwt(x, wavelet)
 
         def make_threshold(x):
-            return np.std(x) * np.sqrt(2 * np.log(x.size))
+            return np.std(x) * np.sqrt(1 * np.log(x.size))
 
         cAt = pywt.threshold(cA, make_threshold(cA), mode="soft")
         cDt = pywt.threshold(cD, make_threshold(cD), mode="soft")

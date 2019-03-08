@@ -1,0 +1,71 @@
+swagger: '2.0'
+info:
+  title: Crypto-Predict API
+  version: '0.0.1'
+paths:
+  /description:
+    get:
+      operationId: app.description
+      summary: Returns a Description of Crypto-Predict.
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: API Homepage and Description
+  /greeting:
+    get:
+      operationId: app.say_hello
+      summary: Returns a greeting.
+      parameters:
+        - name: name
+          in: query
+          type: string
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Price prediction
+  /predict:
+    get:
+      operationId: app.predict
+      summary: Fetches CryptoCompare API data and predicts a price.
+      parameters:
+        - name: coin
+          in: query
+          type: string
+      responses:
+        200:
+          description: Successful response.
+          schema:
+            $ref: '#/definitions/Prediction'
+
+definitions:
+  Prediction:
+    type: object
+    required:
+      - prediction
+      - time
+    properties:
+      prediction:
+        description: Price prediction(s)
+        type: array
+        items:
+          type: number
+          example: 123.123
+        readOnly: true
+      time:
+        description: Time of prediction(s)
+        type: array
+        items:
+          type: string
+          format: date-time
+          example: "2019-03-08T16:00:00Z"
+        readOnly: true
