@@ -1,4 +1,4 @@
-.PHONY: update_install install install_dev clean clean_pyc clean_test clean_build lint run_docker
+.PHONY: update_install install install_dev clean clean_pyc clean_test clean_build lint run_docker run_jupyter
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -28,7 +28,11 @@ install: update_install
 install_dev: update_install
 	pip install -U -e . -r requirements.txt
 	@echo ">>> Creating Jupyter Notebook kernel -> Python ($(PROJECT_NAME))"
-	$(PYTHON_INTERPRETER) -m ipykernel install --user --name $(PROJECT_NAME) --display-name "Python ($(PROJECT_NAME))"
+	$(PYTHON_INTERPRETER) -m ipykernel install --sys-prefix --name $(PROJECT_NAME) --display-name "Python ($(PROJECT_NAME))"
+	jupyter contrib nbextension install --sys-prefix
+
+run_jupyter:
+	jupyter notebook --config ./notebooks/jupyter_notebook_config.py
 
 test: clean_test
 	coverage run setup.py test
