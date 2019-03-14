@@ -1,3 +1,4 @@
+"""Utility functions"""
 import os
 import dotenv
 import pickle

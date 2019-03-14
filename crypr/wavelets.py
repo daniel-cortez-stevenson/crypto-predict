@@ -1,8 +1,5 @@
-"""
-Found at: https://gist.github.com/endolith/2783866
-
-A module which implements the continuous wavelet transform
-
+"""Implements the continuous wavelet transform
+Found at and modified from: https://gist.github.com/endolith/2783866
 ---------------------------------------------------------
 Code released under the BSD 3-clause licence.
 
@@ -88,8 +85,7 @@ class Cwt:
         return int(np.log(float(x)) / np.log(2.0) + 0.0001)
 
     def __init__(self, data, largestscale=1, notes=0, order=2, scaling='linear'):
-        """
-        Continuous wavelet transform of data
+        """Continuous wavelet transform of data
 
         data:    data in array to transform, length must be power of 2
         notes:   number of scale intervals per octave
@@ -123,8 +119,7 @@ class Cwt:
         return
 
     def _setscales(self, ndata, largestscale, notes, scaling):
-        """
-        if notes non-zero, returns a log scale based on notes per ocave
+        """if notes non-zero, returns a log scale based on notes per ocave
         else a linear scale
         (25/07/08): fix notes!=0 case so smallest scale at [0]
         """
@@ -145,38 +140,28 @@ class Cwt:
         return
 
     def getdata(self):
-        """
-        returns wavelet coefficient array
-        """
+        """returns wavelet coefficient array"""
         return self.cwt
 
     def getcoefficients(self):
         return self.cwt
 
     def getpower(self):
-        """
-        returns square of wavelet coefficient array
-        """
+        """returns square of wavelet coefficient array"""
         return (self.cwt * np.conjugate(self.cwt)).real
 
     def getscales(self):
-        """
-        returns array containing scales used in transform
-        """
+        """returns array containing scales used in transform"""
         return self.scales
 
     def getnscale(self):
-        """
-        return number of scales
-        """
+        """return number of scales"""
         return self.nscale
 
 
 # wavelet classes    
 class Morlet(Cwt):
-    """
-    Morlet wavelet
-    """
+    """Morlet wavelet"""
     _omega0 = 5.0
     fourierwl = 4 * np.pi / (_omega0 + np.sqrt(2.0 + _omega0 ** 2))
 
@@ -191,9 +176,7 @@ class Morlet(Cwt):
 
 
 class MorletReal(Cwt):
-    """
-    Real Morlet wavelet
-    """
+    """Real Morlet wavelet"""
     _omega0 = 5.0
     fourierwl = 4 * np.pi / (_omega0 + np.sqrt(2.0 + _omega0 ** 2))
 
@@ -210,9 +193,7 @@ class MorletReal(Cwt):
 
 
 class Paul4(Cwt):
-    """
-    Paul m=4 wavelet
-    """
+    """Paul m=4 wavelet"""
     fourierwl = 4 * np.pi / (2. * 4 + 1.)
 
     def wf(self, s_omega):
@@ -224,9 +205,7 @@ class Paul4(Cwt):
 
 
 class Paul2(Cwt):
-    """
-    Paul m=2 wavelet
-    """
+    """Paul m=2 wavelet"""
     fourierwl = 4 * np.pi / (2. * 2 + 1.)
 
     def wf(self, s_omega):
@@ -238,9 +217,7 @@ class Paul2(Cwt):
 
 
 class Paul(Cwt):
-    """
-    Paul order m wavelet
-    """
+    """Paul order m wavelet"""
 
     def wf(self, s_omega):
         Cwt.fourierwl = 4 * np.pi / (2. * self.order + 1.)
@@ -257,9 +234,7 @@ class Paul(Cwt):
 
 
 class MexicanHat(Cwt):
-    """
-    2nd Derivative Gaussian (mexican hat) wavelet
-    """
+    """2nd Derivative Gaussian (mexican hat) wavelet"""
     fourierwl = 2.0 * np.pi / np.sqrt(2.5)
 
     def wf(self, s_omega):
@@ -273,8 +248,7 @@ class MexicanHat(Cwt):
 
 
 class DOG4(Cwt):
-    """
-    4th Derivative Gaussian wavelet
+    """4th Derivative Gaussian wavelet
     see also T&C errata for - sign
     but reconstruction seems to work best with +!
     """
@@ -285,8 +259,7 @@ class DOG4(Cwt):
 
 
 class DOG1(Cwt):
-    """
-    1st Derivative Gaussian wavelet
+    """1st Derivative Gaussian wavelet
     but reconstruction seems to work best with +!
     """
     fourierwl = 2.0 * np.pi / np.sqrt(1.5)
@@ -298,8 +271,7 @@ class DOG1(Cwt):
 
 
 class DOG(Cwt):
-    """
-    Derivative Gaussian wavelet of order m
+    """Derivative Gaussian wavelet of order m
     but reconstruction seems to work best with +!
     """
 
@@ -317,9 +289,7 @@ class DOG(Cwt):
 
 
 class Haar(Cwt):
-    """
-    Continuous version of Haar wavelet
-    """
+    """Continuous version of Haar wavelet"""
     #    note: not orthogonal!
     #    note: s_omega/4 matches Lecroix scale defn.
     #          s_omega/2 matches orthogonal Haar
@@ -337,9 +307,7 @@ class Haar(Cwt):
 
 
 class HaarW(Cwt):
-    """
-    Continuous version of Haar wavelet (norm)
-    """
+    """Continuous version of Haar wavelet (norm)"""
     #    note: not orthogonal!
     #    note: s_omega/4 matches Lecroix scale defn.
     #          s_omega/2 matches orthogonal Haar
@@ -354,77 +322,3 @@ class HaarW(Cwt):
         # haar.imag=4.0*sin(s_omega/2)**2/om
         haar.imag = 4.0 * np.sin(s_omega / 2) ** 2 / om
         return haar
-
-
-# if __name__ == "__main__":
-#     import numpy as np
-#     import pylab as mpl
-#
-#     wavelet = Morlet
-#     maxscale = 4
-#     notes = 16
-#     scaling = "log"  # or "linear"
-#     # scaling="linear"
-#     plotpower2d = True
-#
-#     # set up some data
-#     Ns = 1024
-#     # limits of analysis
-#     Nlo = 0
-#     Nhi = Ns
-#     # sinusoids of two periods, 128 and 32.
-#     x = np.arange(0.0, 1.0 * Ns, 1.0)
-#     A = np.sin(2.0 * np.pi * x / 128.0)
-#     B = np.sin(2.0 * np.pi * x / 32.0)
-#     A[512:768] += B[0:256]
-#
-#     # Wavelet transform the data
-#     cw = wavelet(A, maxscale, notes, scaling=scaling)
-#     scales = cw.getscales()
-#     cwt = cw.getdata()
-#     # power spectrum
-#     pwr = cw.getpower()
-#     scalespec = np.sum(pwr, axis=1) / scales  # calculate scale spectrum
-#     # scales
-#     y = cw.fourierwl * scales
-#     x = np.arange(Nlo * 1.0, Nhi * 1.0, 1.0)
-#
-#     fig = mpl.figure(1)
-#
-#     # 2-d coefficient plot
-#     ax = mpl.axes([0.4, 0.1, 0.55, 0.4])
-#     mpl.xlabel('Time [s]')
-#     plotcwt = np.clip(np.fabs(cwt.real), 0., 1000.)
-#     if plotpower2d: plotcwt = pwr
-#     im = mpl.imshow(plotcwt, cmap=mpl.cm.jet, extent=[x[0], x[-1], y[-1], y[0]], aspect='auto')
-#     # colorbar()
-#     if scaling == "log": ax.set_yscale('log')
-#     mpl.ylim(y[0], y[-1])
-#     ax.xaxis.set_ticks(np.arange(Nlo * 1.0, (Nhi + 1) * 1.0, 100.0))
-#     ax.yaxis.set_ticklabels(["", ""])
-#     theposition = mpl.gca().get_position()
-#
-#     # data plot
-#     ax2 = mpl.axes([0.4, 0.54, 0.55, 0.3])
-#     mpl.ylabel('Data')
-#     pos = ax.get_position()
-#     mpl.plot(x, A, 'b-')
-#     mpl.xlim(Nlo * 1.0, Nhi * 1.0)
-#     ax2.xaxis.set_ticklabels(["", ""])
-#     mpl.text(0.5, 0.9, "Wavelet example with extra panes",
-#              fontsize=14, bbox=dict(facecolor='green', alpha=0.2),
-#              transform=fig.transFigure, horizontalalignment='center')
-#
-#     # projected power spectrum
-#     ax3 = mpl.axes([0.08, 0.1, 0.29, 0.4])
-#     mpl.xlabel('Power')
-#     mpl.ylabel('Period [s]')
-#     vara = 1.0
-#     if scaling == "log":
-#         mpl.loglog(scalespec / vara + 0.01, y, 'b-')
-#     else:
-#         mpl.semilogx(scalespec / vara + 0.01, y, 'b-')
-#     mpl.ylim(y[0], y[-1])
-#     mpl.xlim(1000.0, 0.01)
-#
-#     mpl.show()

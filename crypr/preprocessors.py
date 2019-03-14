@@ -1,13 +1,11 @@
-from crypr.decorator import my_logger, my_timer
-from crypr.build import make_features, series_to_predict_matrix, data_to_supervised
-from sklearn.base import TransformerMixin
-from crypr.build import continuous_wavelet_transform, make_single_feature, discrete_wavelet_transform_smooth
+"""Proprocesser classes modeled after SciKit-Learn"""
 import numpy as np
+from sklearn.base import TransformerMixin
+from crypr.build import make_features, series_to_predict_matrix, data_to_supervised
+from crypr.build import continuous_wavelet_transform, make_single_feature, discrete_wavelet_transform_smooth
 
 
 class Preprocesser(TransformerMixin):
-    @my_logger
-    @my_timer
     def __init__(self, production, Tx, Ty, target_col, name):
         self.production = production
         self.Tx, self.Ty = Tx, Ty
@@ -16,27 +14,19 @@ class Preprocesser(TransformerMixin):
         self.input_columns = None
         self.engineered_columns = None
 
-    @my_logger
-    @my_timer
     def fit(self, X, y=None):
         self.input_columns = X.columns.values
         return self
 
-    @my_logger
-    @my_timer
     def transform(self, X):
         return X
 
 
 class SimplePreprocessor(Preprocesser):
-    @my_logger
-    @my_timer
     def __init__(self, production, target_col, Tx, Ty, moving_averages,  name):
         Preprocesser.__init__(self, production, Tx, Ty, target_col, name)
         self.moving_averages = moving_averages
 
-    @my_logger
-    @my_timer
     def transform(self, X):
         fe = make_features(X, self.target_col, self.moving_averages)
         if self.production:
@@ -55,30 +45,14 @@ class SimplePreprocessor(Preprocesser):
         print('int shape {}'.format(X.shape))
         X = np.swapaxes(a=X, axis1=-1, axis2=-2)
         return X
-    # @my_logger
-    # @my_timer
-    # def save_output(self, path):
-    #     if self.X:
-    #         self.X.to_csv('{}/X_{}.csv'.format(path, self.name))
-    #         print('Feature data saved to: {}/X_{}.csv'.format(path, self.name))
-    #     if self.y:
-    #         self.y.to_csv('{}/y_{}.csv'.format(path, self.name))
-    #         print('Target data saved to: {}/y_{}.csv'.format(path, self.name))
-
-
 
 
 class CWTPreprocessor(Preprocesser):
-
-    @my_logger
-    @my_timer
     def __init__(self, production, target_col, Tx, Ty, N, wavelet, name):
         Preprocesser.__init__(self, production, Tx, Ty, target_col, name)
         self.N = N
         self.wavelet = wavelet
 
-    @my_logger
-    @my_timer
     def transform(self, X):
         fe = make_single_feature(X, self.target_col)
         if self.production:
@@ -92,15 +66,10 @@ class CWTPreprocessor(Preprocesser):
 
 
 class DWTSmoothPreprocessor(Preprocesser):
-
-    @my_logger
-    @my_timer
     def __init__(self, production, target_col, Tx, Ty, wavelet, name):
         Preprocesser.__init__(self, production, Tx, Ty, target_col, name)
         self.wavelet = wavelet
 
-    @my_logger
-    @my_timer
     def transform(self, X):
         fe = make_single_feature(X, self.target_col)
         if self.production:

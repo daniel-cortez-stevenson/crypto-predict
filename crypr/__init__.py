@@ -4,7 +4,6 @@ __all__ = [
     'cryptocompare',
     'models',
     'preprocessors',
-    'train',
     'util',
     'visualize',
     'wavelets',

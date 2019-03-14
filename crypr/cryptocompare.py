@@ -1,14 +1,15 @@
+"""Interacting with CryptoCompare API (retrieving raw data)"""
 import requests
 import numpy as np
 import pandas as pd
 import datetime
+from crypr.decorator import my_logger
 
 
-def retrieve_hourly_data(coin,
-                         comparison_symbol='USD',
+@my_logger
+def retrieve_hourly_data(coin, comparison_symbol='USD',
                          to_time=(np.datetime64(datetime.datetime.now()).astype('uint64') / 1e6).astype('uint32'),
-                         limit=2000,
-                         exchange='CCCAGG'):
+                         limit=2000, exchange='CCCAGG'):
     params = {
         'fsym': coin.upper(),
         'tsym': comparison_symbol.upper(),
@@ -22,10 +23,8 @@ def retrieve_hourly_data(coin,
     return r
 
 
-def retrieve_all_data(coin,
-                      num_hours,
-                      comparison_symbol='USD',
-                      exchange='CCCAGG',
+@my_logger
+def retrieve_all_data(coin, num_hours, comparison_symbol='USD', exchange='CCCAGG',
                       end_time=(np.datetime64(datetime.datetime.now()).astype('uint64') / 1e6).astype('uint32')):
     df = pd.DataFrame()
 
@@ -43,11 +42,12 @@ def retrieve_all_data(coin,
         if i == num_calls - 1:
             limit = last_limit
 
-        r = retrieve_hourly_data(coin=coin, comparison_symbol=comparison_symbol, to_time=end_time, limit=limit, exchange=exchange)
-        print('Call # {} with Response code: {}'.format(i+1, r.status_code))
+        r = retrieve_hourly_data(coin=coin, comparison_symbol=comparison_symbol,
+                                 to_time=end_time, limit=limit, exchange=exchange)
+        print('Call # {} with Response code: {}'.format(i + 1, r.status_code))
         r_data = r.json()['Data']
 
-        end_time = r.json()['TimeFrom']+3600
+        end_time = r.json()['TimeFrom'] + 3600
 
         this_df = pd.DataFrame(r_data)
 
@@ -61,9 +61,6 @@ def retrieve_all_data(coin,
     df.sort_values('timestamp', inplace=True)
 
     df = df[['volumeto', 'volumefrom', 'open', 'high', 'close', 'low', 'time', 'timestamp']]
-
-    # if num_calls == 1:
-    #     df = df.iloc[-limit:]
 
     df.drop_duplicates(inplace=True)
     df.reset_index(inplace=True)
