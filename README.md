@@ -12,7 +12,6 @@ Current implementation smooths the raw close % change data (previous 72 hours) u
 ***Note: Anaconda is recommended to manage the project environment. Environment creation without Anaconda is untested***
 
 ## Install the Development Environment
-*from the top project directory*
 ```bash
 mv .env_template .env   # Must have a .env file for some functions to find correct path
 make create_environment
@@ -29,11 +28,19 @@ crypr-models
 ```
 
 ## Run the API with Docker
-*from the top project directory*
 ```bash
 make run_docker
 ```
 Now find your prediction at http://localhost:5000/predict?coin={ETH or BTC}
+
+## Jupyter Notebooks
+The Jupyter Notebooks in this project serve as rich visual examples of how data preprocessing and model training is done for the prediction API.
+
+Run with
+```bash
+make run_jupyter
+```
+Notebook server will be at http://localhost:8888
 
 ## Future Directions
 - More coins!
@@ -64,7 +71,6 @@ Now find your prediction at http://localhost:5000/predict?coin={ETH or BTC}
 │   ├── decorator.py
 │   ├── models.py
 │   ├── preprocessors.py
-│   ├── train.py
 │   ├── util.py
 │   ├── visualize.py
 │   ├── wavelets.py
