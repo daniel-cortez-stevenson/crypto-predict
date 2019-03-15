@@ -1,12 +1,12 @@
 import unittest
 import os
-import datetime
+from datetime import datetime, timezone
 from dotenv import find_dotenv, load_dotenv
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from xgboost import XGBRegressor
-from crypr import cryptocompare
+from crypr.cryptocompare import retrieve_all_data
 from crypr.models import RegressionModel, SavedRegressionModel
 from crypr.preprocessors import SimplePreprocessor
 
@@ -27,13 +27,13 @@ class TestBase(unittest.TestCase):
         self.Tx = 72
         self.Ty = 1
         self.TEST_SIZE = 0.05
-        self.end_time = (np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype('uint32')
+        self.end_time = int(datetime(2018, 6, 27, tzinfo=timezone.utc).timestamp())
 
-        self.data = cryptocompare.retrieve_all_data(coin=self.SYM, num_hours=self.LAST_N_HOURS, comparison_symbol='USD',
-                                                    end_time=self.end_time)
+        self.data = retrieve_all_data(coin=self.SYM, num_hours=self.LAST_N_HOURS, comparison_symbol='USD',
+                                      end_time=self.end_time)
 
-        self.predict_data = cryptocompare.retrieve_all_data(coin=self.SYM, num_hours=self.Tx + self.FEATURE_WINDOW - 1,
-                                                            comparison_symbol='USD', end_time=self.end_time)
+        self.predict_data = retrieve_all_data(coin=self.SYM, num_hours=self.Tx + self.FEATURE_WINDOW - 1,
+                                              comparison_symbol='USD', end_time=self.end_time)
 
         self.X_shape =(13852, 1224)
         self.y_shape =(13852, 1)
