@@ -54,7 +54,7 @@ def main(epochs, verbose):
         logger.info('Building model {}...'.format(model_type))
         if model_type == 'ae_lstm':
             estimator = build_ae_lstm(num_inputs=X_train.shape[-1], num_channels=num_channels, num_outputs=ty)
-            model = RegressionModel(estimator, model_type)
+            model = RegressionModel(estimator)
         else:
             raise ValueError('Model type {} is not supported. Exiting.'.format(model_type))
         logger.info(model.estimator.summary())
