@@ -28,7 +28,7 @@ install:
   - make install_dev
   - crypr-data --hours 1000
   - crypr-features
-  - crypr-models --epochs 1
+  - crypr-models --epochs 1 --verbose 0
   # Deploy crypr API
   - docker build -f ./docker/Dockerfile -t crypr-api .
   - CONTAINER_ID=$(docker run -d -p 5000:5000 crypr-api)

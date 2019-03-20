@@ -22,6 +22,6 @@ EXPOSE 5000
 HEALTHCHECK --interval=10s --timeout=5s \
   CMD curl -f http://0.0.0.0:5000/greeting || exit 1
 
-ENTRYPOINT ["connexion"]
+ENTRYPOINT ["python"]
 
-CMD ["run", "api/swagger.yaml", "-v"]
+CMD ["-m", "connexion", "run", "api/swagger.yaml", "-v"]

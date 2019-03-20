@@ -2,7 +2,7 @@
 import numpy as np
 from sklearn.base import TransformerMixin
 from crypr.build import make_features, series_to_predict_matrix, data_to_supervised
-from crypr.build import continuous_wavelet_transform, make_single_feature, discrete_wavelet_transform_smooth
+from crypr.build import continuous_wavelet_transform, make_single_feature, discrete_wavelet_transform
 
 
 class Preprocesser(TransformerMixin):
@@ -74,12 +74,12 @@ class DWTSmoothPreprocessor(Preprocesser):
         fe = make_single_feature(X, self.target_col)
         if self.production:
             X = series_to_predict_matrix(fe['target'].tolist(), n_in=self.Tx, dropnan=True)
-            X = discrete_wavelet_transform_smooth(X, wavelet=self.wavelet)
+            X = discrete_wavelet_transform(X, wavelet=self.wavelet)
             X = self._reshape(X)
             return X
         else:
             X, y = data_to_supervised(input_df=fe[['target']], Tx=self.Tx, Ty=self.Ty)
-            X = discrete_wavelet_transform_smooth(X, wavelet=self.wavelet)
+            X = discrete_wavelet_transform(X, wavelet=self.wavelet)
             X = self._reshape(X)
             return X, y
 
