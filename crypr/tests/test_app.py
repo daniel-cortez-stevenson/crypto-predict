@@ -6,12 +6,10 @@ import requests
 class TestRequest(unittest.TestCase):
     """Base class for testing links"""
     def setUp(self):
-        """Define some unique data for validation"""
         self.domain = 'http://127.0.0.1:5000'
         self.acceptable_codes = [200]
 
     def tearDown(self):
-        """Destroy unique data"""
         self.domain = None
         self.acceptable_codes = None
 

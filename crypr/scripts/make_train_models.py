@@ -83,4 +83,4 @@ def main(epochs, verbose):
         model_filename = '{}_smooth_{}x{}_{}_{}.h5'.format(model_type, num_channels, tx, wavelet, coin)
         output_path = os.path.join(output_dir, model_filename)
         logger.info('Saving trained model to {}...'.format(output_path))
-        model.save_estimator(path=output_path)
+        model.estimator.save(output_path)

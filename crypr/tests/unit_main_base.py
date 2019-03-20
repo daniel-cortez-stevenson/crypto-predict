@@ -1,14 +1,14 @@
 """Solution script for other tests"""
-import datetime
-from dotenv import load_dotenv, find_dotenv
+from datetime import datetime, timezone
 import os
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from xgboost import XGBRegressor
 from crypr.cryptocompare import retrieve_all_data
-from crypr.models import RegressionModel, SavedRegressionModel
+from crypr.models import RegressionModel, SavedPickleRegressionModel
 from crypr.preprocessors import SimplePreprocessor
+from crypr.util import get_project_path
 
 
 if __name__ == '__main__':
@@ -16,21 +16,18 @@ if __name__ == '__main__':
 
     SYM = 'ETH'
     LAST_N_HOURS = 14000
-    FEATURE_WINDOW=72
+    FEATURE_WINDOW = 72
     MOVING_AVERAGE_LAGS = [6, 12, 24, 48, 72]
     TARGET = 'close'
     Tx = 72
     Ty = 1
     TEST_SIZE = 0.05
 
-    load_dotenv(find_dotenv())
-    project_path = os.path.dirname(find_dotenv())
+    project_path = get_project_path()
+    test_data_dir = os.path.join(project_path, 'crypr', 'tests', 'data')
 
-    data = retrieve_all_data(
-        coin=SYM,
-        num_hours=LAST_N_HOURS,
-        comparison_symbol='USD',
-        end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype('uint32'))
+    data = retrieve_all_data(coin=SYM, num_hours=LAST_N_HOURS, comparison_symbol='USD',
+                             end_time=int(datetime(2018, 6, 27, tzinfo=timezone.utc).timestamp()))
 
     preprocessor = SimplePreprocessor(
         production=False,
@@ -63,7 +60,7 @@ if __name__ == '__main__':
     print('Test Feature Matrix X Sample: {}'.format(X_test.sample(1, random_state=0).values[0][0]))
     print('Test Target Values y Sample: {}'.format(y_test.sample(1, random_state=0).values[0][0]))
 
-    ta = RegressionModel(XGBRegressor(), 'xgboost_regressor')
+    ta = RegressionModel(XGBRegressor())
 
     parameters = {
         'objective': 'reg:linear',
@@ -71,25 +68,24 @@ if __name__ == '__main__':
         'max_depth': 10,
         'min_child_weight': 4,
         'silent': 1,
-        'subsample': 0.7,
-        'colsample_bytree': 0.7,
-        'n_estimators': 20
+        'subsample': .7,
+        'colsample_bytree': .7,
+        'n_estimators': 20,
     }
 
     ta.estimator.set_params(**parameters)
 
     ta.fit(X_train, y_train)
-    train_pred = ta.predict(X_train, y_train)
-    train_rmse, train_mae = ta.evaluate(y_pred=train_pred, y_true=y_train)
+
+    train_rmse, train_mae = ta.evaluate(X_pred=X_train, y_true=y_train)
     print('Train RMSE: {}'.format(train_rmse))
-    print("Train MAE: {}\n".format(train_mae))
+    print('Train MAE: {}\n'.format(train_mae))
 
-    ta = SavedRegressionModel('{}/crypr/tests/unit_xgboost_ETH_tx72_ty1_flag72.pkl'.format(project_path))
+    ta_model_filename = 'unit_xgboost_ETH_tx72_ty1_flag72.pkl'
+    ta = SavedPickleRegressionModel(os.path.join(test_data_dir, ta_model_filename))
 
-    new_data = retrieve_all_data(
-        SYM,
-        Tx + FEATURE_WINDOW - 1,
-        end_time=(np.datetime64(datetime.datetime(2018, 6, 27)).astype('uint64') / 1e6).astype('uint32'))
+    new_data = retrieve_all_data(coin=SYM, num_hours=Tx + FEATURE_WINDOW - 1,
+                                 end_time=int(datetime(2018, 6, 27, tzinfo=timezone.utc).timestamp()))
 
     preprocessor = SimplePreprocessor(
         production=True,

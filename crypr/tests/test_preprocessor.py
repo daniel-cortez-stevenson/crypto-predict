@@ -10,7 +10,6 @@ from crypr.preprocessors import SimplePreprocessor, DWTSmoothPreprocessor
 class TestPreprocessor(unittest.TestCase):
     """Base class for testing preprocessors"""
     def setUp(self):
-        """Define some unique data for validation"""
         load_dotenv(find_dotenv())
         self.project_path = os.path.dirname(find_dotenv())
         self.data_dir = os.path.join(self.project_path, 'crypr', 'tests', 'data')
@@ -23,7 +22,6 @@ class TestPreprocessor(unittest.TestCase):
         self.dummy_arr_2d = np.reshape(np.arange(5*4*3), (5, 12))
 
     def tearDown(self):
-        """Destroy unique data"""
         self.data = None
         self.Tx = None
         self.Ty = None

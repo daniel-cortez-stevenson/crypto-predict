@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from xgboost import XGBRegressor
 from crypr.cryptocompare import retrieve_all_data
-from crypr.models import RegressionModel, SavedRegressionModel
+from crypr.models import RegressionModel, SavedPickleRegressionModel
 from crypr.preprocessors import SimplePreprocessor
 
 
@@ -35,8 +35,8 @@ class TestBase(unittest.TestCase):
         self.predict_data = retrieve_all_data(coin=self.SYM, num_hours=self.Tx + self.FEATURE_WINDOW - 1,
                                               comparison_symbol='USD', end_time=self.end_time)
 
-        self.X_shape =(13852, 1224)
-        self.y_shape =(13852, 1)
+        self.X_shape = (13852, 1224)
+        self.y_shape = (13852, 1)
 
         self.X_sample = 709.48
         self.y_sample = -1.498064809896027
@@ -112,23 +112,26 @@ class TestBase(unittest.TestCase):
         new_shape = (old_shape[0], old_shape[1]*old_shape[2])
         X_train = pd.DataFrame(np.reshape(a=X_train, newshape=new_shape), columns=preprocessor.engineered_columns)
 
-        self.ta = RegressionModel(XGBRegressor(), 'Unit_Test_Regressor')
+        self.ta = RegressionModel(XGBRegressor())
 
         self.ta.estimator.set_params(**self.parameters)
         self.ta.fit(X_train, y_train)
-        train_pred = self.ta.predict(X_train)
-        rmse, mae = self.ta.evaluate(y_pred=train_pred, y_true=y_train)
+
+        rmse, mae = self.ta.evaluate(X_pred=X_train, y_true=y_train)
         self.assertAlmostEqual(rmse, self.train_rmse, 1)
         self.assertAlmostEqual(mae, self.train_mae, 1)
 
     def test_predict(self):
         np.random.seed(31337)
-        preprocessor = SimplePreprocessor(True, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS, name='Unit_Test')
+        preprocessor = SimplePreprocessor(True, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS,
+                                          name='Unit_Test')
         X = preprocessor.fit(self.predict_data).transform(self.predict_data)
 
         old_shape = X.shape
         new_shape = (old_shape[0], old_shape[1] * old_shape[2])
+
         X = pd.DataFrame(np.reshape(a=X, newshape=new_shape), columns=preprocessor.engineered_columns)
 
-        self.ta = SavedRegressionModel(os.path.join(self.data_dir, 'unit_xgboost_ETH_tx72_ty1_flag72.pkl'))
+        ta_model_filename = 'unit_xgboost_ETH_tx72_ty1_flag72.pkl'
+        self.ta = SavedPickleRegressionModel(os.path.join(self.data_dir, ta_model_filename))
         self.assertEqual(self.ta.predict(X)[0], self.prediction)

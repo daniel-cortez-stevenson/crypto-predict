@@ -14,13 +14,13 @@ class TestModel(unittest.TestCase):
         self.X = np.random.randint(low=0, high=100, size=(batch_size, 1, 72)) / 100
         self.y = np.random.randint(low=0, high=1000, size=(batch_size,))
         self.models = [
-            RegressionModel(build_ae_lstm(Tx, 1, 1), 'ae_lstm'),
-            RegressionModel(LSTM_WSAEs(Tx, 1, 1), 'lstm_wsaes'),
+            RegressionModel(build_ae_lstm(Tx, 1, 1)),
+            RegressionModel(LSTM_WSAEs(Tx, 1, 1)),
         ]
         self.model_inputs = [self.X, self.X]
         self.model_outputs = [
             [self.X, self.y],
-            [self.X, self.y]
+            [self.X, self.y],
         ]
         self.fits = []
 
