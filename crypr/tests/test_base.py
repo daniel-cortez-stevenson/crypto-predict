@@ -1,7 +1,5 @@
 import unittest
-import os
-from datetime import datetime, timezone
-from dotenv import find_dotenv, load_dotenv
+from os.path import join
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -9,15 +7,15 @@ from xgboost import XGBRegressor
 from crypr.cryptocompare import retrieve_all_data
 from crypr.models import RegressionModel, SavedPickleRegressionModel
 from crypr.preprocessors import SimplePreprocessor
+from crypr.util import get_project_path, utc_timestamp_ymd
 
 
 class TestBase(unittest.TestCase):
     def setUp(self):
         np.random.seed(31337)
 
-        load_dotenv(find_dotenv())
-        self.project_path = os.path.dirname(find_dotenv())
-        self.data_dir = os.path.join(self.project_path, 'crypr', 'tests', 'data')
+        self.project_path = get_project_path()
+        self.data_dir = join(self.project_path, 'crypr', 'tests', 'data')
 
         self.SYM = 'ETH'
         self.LAST_N_HOURS = 14000
@@ -27,7 +25,7 @@ class TestBase(unittest.TestCase):
         self.Tx = 72
         self.Ty = 1
         self.TEST_SIZE = 0.05
-        self.end_time = int(datetime(2018, 6, 27, tzinfo=timezone.utc).timestamp())
+        self.end_time = utc_timestamp_ymd(2018, 6, 27)
 
         self.data = retrieve_all_data(coin=self.SYM, num_hours=self.LAST_N_HOURS, comparison_symbol='USD',
                                       end_time=self.end_time)
@@ -134,5 +132,5 @@ class TestBase(unittest.TestCase):
         X = pd.DataFrame(np.reshape(a=X, newshape=new_shape), columns=preprocessor.engineered_columns)
 
         ta_model_filename = 'unit_xgboost_ETH_tx72_ty1_flag72.pkl'
-        self.ta = SavedPickleRegressionModel(os.path.join(self.data_dir, ta_model_filename))
+        self.ta = SavedPickleRegressionModel(join(self.data_dir, ta_model_filename))
         self.assertEqual(self.ta.predict(X)[0], self.prediction)

@@ -1,6 +1,6 @@
 """Check That Preprocessors are Functioning Correctly"""
 import unittest
-from datetime import datetime
+from crypr.util import utc_timestamp_now
 from crypr.cryptocompare import CryptocompareAPI, retrieve_all_data
 
 
@@ -10,7 +10,7 @@ class TestCryptocompare(unittest.TestCase):
         self.columns = ['volumeto', 'volumefrom', 'open', 'high', 'close', 'low', 'time', 'timestamp']
         self.coin = 'BTC'
         self.comparison_sym = 'USD'
-        self.end_to_time = int(datetime.now().timestamp())
+        self.end_to_time = utc_timestamp_now()
         self.limit = 2000
         self.exchange = 'CCCAGG'
         self.num_hours = [100, 2000, 4000]

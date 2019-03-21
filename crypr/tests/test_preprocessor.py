@@ -2,7 +2,7 @@
 from unittest import TestCase
 import pandas as pd
 import numpy as np
-import os
+from os.path import join
 from crypr.util import get_project_path
 from crypr.preprocessors import SimplePreprocessor, DWTSmoothPreprocessor
 
@@ -10,8 +10,8 @@ from crypr.preprocessors import SimplePreprocessor, DWTSmoothPreprocessor
 class TestPreprocessor(TestCase):
     def setUp(self):
         self.project_path = get_project_path()
-        self.data_dir = os.path.join(self.project_path, 'crypr', 'tests', 'data')
-        self.data = pd.read_csv(os.path.join(self.data_dir, 'test_raw_btc.csv'), index_col=0)
+        self.data_dir = join(self.project_path, 'crypr', 'tests', 'data')
+        self.data = pd.read_csv(join(self.data_dir, 'test_raw_btc.csv'), index_col=0)
         self.Tx = 72
         self.Ty = 1
         self.target_col = 'close'
@@ -37,7 +37,7 @@ class TestPreprocessor(TestCase):
         self.assertEqual(dummy.size, reshaped_data.size)
         # Equal sum of values
         self.assertEqual((dummy[0].sum(), dummy[0].mean(), dummy[0].std()),
-                        (reshaped_data[0].sum(), reshaped_data[0].mean(), reshaped_data[0].std()))
+                         (reshaped_data[0].sum(), reshaped_data[0].mean(), reshaped_data[0].std()))
 
 
 class TestDWTSmoothPreprocessor(TestPreprocessor):

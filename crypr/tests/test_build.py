@@ -4,7 +4,7 @@ from os.path import join
 import numpy as np
 import pandas as pd
 from crypr.util import get_project_path
-from crypr.build import series_to_supervised, series_to_predict_matrix
+from crypr.build import series_to_supervised
 
 
 class TestSeriesTo(TestCase):

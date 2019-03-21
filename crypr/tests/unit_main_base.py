@@ -1,6 +1,5 @@
 """Solution script for other tests"""
-from datetime import datetime, timezone
-import os
+from os.path import join
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -8,7 +7,7 @@ from xgboost import XGBRegressor
 from crypr.cryptocompare import retrieve_all_data
 from crypr.models import RegressionModel, SavedPickleRegressionModel
 from crypr.preprocessors import SimplePreprocessor
-from crypr.util import get_project_path
+from crypr.util import get_project_path, utc_timestamp_ymd
 
 
 if __name__ == '__main__':
@@ -18,24 +17,19 @@ if __name__ == '__main__':
     LAST_N_HOURS = 14000
     FEATURE_WINDOW = 72
     MOVING_AVERAGE_LAGS = [6, 12, 24, 48, 72]
+    TO_TIME = utc_timestamp_ymd(2018, 6, 27)
     TARGET = 'close'
     Tx = 72
     Ty = 1
     TEST_SIZE = 0.05
 
     project_path = get_project_path()
-    test_data_dir = os.path.join(project_path, 'crypr', 'tests', 'data')
+    test_data_dir = join(project_path, 'crypr', 'tests', 'data')
 
-    data = retrieve_all_data(coin=SYM, num_hours=LAST_N_HOURS, comparison_symbol='USD',
-                             end_time=int(datetime(2018, 6, 27, tzinfo=timezone.utc).timestamp()))
+    data = retrieve_all_data(coin=SYM, num_hours=LAST_N_HOURS, comparison_symbol='USD', end_time=TO_TIME)
 
-    preprocessor = SimplePreprocessor(
-        production=False,
-        target_col=TARGET,
-        Tx=Tx,
-        Ty=Ty,
-        moving_averages=MOVING_AVERAGE_LAGS,
-        name='unit_test')
+    preprocessor = SimplePreprocessor(production=False, target_col=TARGET, Tx=Tx, Ty=Ty,
+                                      moving_averages=MOVING_AVERAGE_LAGS)
     X, y = preprocessor.fit(data).transform(data)
 
     old_shape = X.shape
@@ -82,18 +76,12 @@ if __name__ == '__main__':
     print('Train MAE: {}\n'.format(train_mae))
 
     ta_model_filename = 'unit_xgboost_ETH_tx72_ty1_flag72.pkl'
-    ta = SavedPickleRegressionModel(os.path.join(test_data_dir, ta_model_filename))
+    ta = SavedPickleRegressionModel(join(test_data_dir, ta_model_filename))
 
-    new_data = retrieve_all_data(coin=SYM, num_hours=Tx + FEATURE_WINDOW - 1,
-                                 end_time=int(datetime(2018, 6, 27, tzinfo=timezone.utc).timestamp()))
+    new_data = retrieve_all_data(coin=SYM, num_hours=Tx + FEATURE_WINDOW - 1, end_time=TO_TIME)
 
-    preprocessor = SimplePreprocessor(
-        production=True,
-        target_col=TARGET,
-        Tx=Tx,
-        Ty=Ty,
-        moving_averages=[6, 12, 24, 48, 72],
-        name='Unit_New_Prediction_Preprocessor')
+    preprocessor = SimplePreprocessor(production=True, target_col=TARGET, Tx=Tx, Ty=Ty,
+                                      moving_averages=MOVING_AVERAGE_LAGS)
     X_new = preprocessor.fit(new_data).transform(new_data)
 
     old_shape = X_new.shape

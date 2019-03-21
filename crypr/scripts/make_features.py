@@ -1,19 +1,16 @@
 """Main data preprocessing script"""
-import logging
 from os.path import join
 from os import makedirs
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from crypr.util import get_project_path
+from crypr.util import get_project_path, my_logger
 from crypr.preprocessors import DWTSmoothPreprocessor
 
 
+@my_logger
 def main():
-    log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    logging.basicConfig(level=logging.INFO, format=log_fmt)
-    logger = logging.getLogger(__name__)
-    logger.info('Making features from raw data...')
+    print('Making features from raw data...')
 
     data_dir = join(get_project_path(), 'data', 'raw')
     output_dir = join(get_project_path(), 'data', 'processed')
@@ -28,7 +25,7 @@ def main():
 
     for SYM in coins:
         raw_data_path = join(data_dir, SYM + '.csv')
-        logger.info('Featurizing raw {} data from {}...'.format(SYM, raw_data_path))
+        print('Featurizing raw {} data from {}...'.format(SYM, raw_data_path))
 
         raw_df = pd.read_csv(raw_data_path, index_col=0)
 

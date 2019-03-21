@@ -1,8 +1,7 @@
 """Run the API by calling this module"""
 import connexion
-import logging
-from os.path import join
 from flask import abort
+from os.path import join
 import pandas as pd
 from crypr.models import SavedKerasTensorflowModel
 from crypr.preprocessors import DWTSmoothPreprocessor
@@ -67,7 +66,6 @@ def predict(coin=None):
     return dict(prediction=prediction_val, time=time_val)
 
 
-logging.basicConfig(level=logging.INFO)
 app = connexion.App(__name__)
 app.add_api('swagger.yaml')
 application = app.app

@@ -2,8 +2,8 @@
 import requests
 from math import ceil
 import pandas as pd
-from datetime import datetime, timezone
-from crypr.decorator import my_logger
+from datetime import datetime
+from crypr.util import my_logger, utc_timestamp_now
 
 
 class CryptocompareAPI(object):
@@ -13,7 +13,7 @@ class CryptocompareAPI(object):
         'tsym': 'USD',
         'e': 'CCCAGG',
         'limit': 2000,
-        'toTs': int(datetime(2018, 6, 27, tzinfo=timezone.utc).timestamp()),
+        'toTs': utc_timestamp_now(),
     }
     valid_param_keys = ['fsym', 'tsym', 'e', 'limit', 'toTs']
 
@@ -41,7 +41,7 @@ class CryptocompareAPI(object):
 
 @my_logger
 def retrieve_all_data(coin, num_hours, comparison_symbol='USD', exchange='CCCAGG',
-                      end_time=int(datetime.now().timestamp())) -> pd.DataFrame:
+                      end_time=utc_timestamp_now()) -> pd.DataFrame:
     df = pd.DataFrame()
     api = CryptocompareAPI()
 
