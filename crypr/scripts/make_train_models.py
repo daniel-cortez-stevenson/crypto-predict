@@ -60,8 +60,7 @@ def main(epochs, verbose):
         logger.info(model.estimator.summary())
 
         tb_log_dir = os.path.join(output_dir, 'logs')
-        tensorboard = TensorBoard(log_dir=tb_log_dir,
-                                  histogram_freq=0, batch_size=batch_size,
+        tensorboard = TensorBoard(log_dir=tb_log_dir, histogram_freq=0, batch_size=batch_size,
                                   write_graph=True, write_grads=False, write_images=False)
 
         opt = Adam(lr=learning_rate, beta_1=beta_1, beta_2=beta_2, decay=decay)

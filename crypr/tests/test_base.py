@@ -69,7 +69,8 @@ class TestBase(unittest.TestCase):
 
     def test_preprocess(self):
         np.random.seed(31337)
-        preprocessor = SimplePreprocessor(False, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS, name='Unit_Test')
+        preprocessor = SimplePreprocessor(production=False, target_col=self.TARGET, Tx=self.Tx, Ty=self.Ty,
+                                          moving_averages=self.MOVING_AVERAGE_LAGS)
 
         X, y = preprocessor.fit(self.data).transform(self.data)
 
@@ -83,8 +84,7 @@ class TestBase(unittest.TestCase):
 
     def test_split(self):
         np.random.seed(31337)
-        preprocessor = SimplePreprocessor(False, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS,
-                                          name='Unit_Test')
+        preprocessor = SimplePreprocessor(False, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS)
         X, y = preprocessor.fit(self.data).transform(self.data)
 
         old_shape = X.shape
@@ -103,7 +103,8 @@ class TestBase(unittest.TestCase):
 
     def test_fit(self):
         np.random.seed(31337)
-        preprocessor = SimplePreprocessor(False, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS, name='Unit_Test')
+        preprocessor = SimplePreprocessor(production=False, target_col=self.TARGET, Tx=self.Tx, Ty=self.Ty,
+                                          moving_averages=self.MOVING_AVERAGE_LAGS)
 
         X, y = preprocessor.fit(self.data).transform(self.data)
         X_train, _, y_train, _ = train_test_split(X, y, test_size=self.TEST_SIZE, shuffle=False)
@@ -123,8 +124,8 @@ class TestBase(unittest.TestCase):
 
     def test_predict(self):
         np.random.seed(31337)
-        preprocessor = SimplePreprocessor(True, self.TARGET, self.Tx, self.Ty, self.MOVING_AVERAGE_LAGS,
-                                          name='Unit_Test')
+        preprocessor = SimplePreprocessor(production=True, target_col=self.TARGET, Tx=self.Tx, Ty=self.Ty,
+                                          moving_averages=self.MOVING_AVERAGE_LAGS)
         X = preprocessor.fit(self.predict_data).transform(self.predict_data)
 
         old_shape = X.shape

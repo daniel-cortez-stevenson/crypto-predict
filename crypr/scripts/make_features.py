@@ -32,8 +32,7 @@ def main():
 
         raw_df = pd.read_csv(raw_data_path, index_col=0)
 
-        preprocessor = DWTSmoothPreprocessor(production=False, target_col=TARGET, Tx=Tx, Ty=Ty, wavelet=WAVELET,
-                                             name='{}_{}_preprocessor'.format(__file__, SYM))
+        preprocessor = DWTSmoothPreprocessor(production=False, target_col=TARGET, Tx=Tx, Ty=Ty, wavelet=WAVELET)
         X_smoothed, y = preprocessor.fit_transform(raw_df)
 
         X_train, X_test, y_train, y_test = train_test_split(X_smoothed, y, test_size=TEST_SIZE, shuffle=False)

@@ -1,17 +1,15 @@
 """Check That Preprocessors are Functioning Correctly"""
-import unittest
+from unittest import TestCase
 import pandas as pd
 import numpy as np
 import os
-from dotenv import load_dotenv, find_dotenv
+from crypr.util import get_project_path
 from crypr.preprocessors import SimplePreprocessor, DWTSmoothPreprocessor
 
 
-class TestPreprocessor(unittest.TestCase):
-    """Base class for testing preprocessors"""
+class TestPreprocessor(TestCase):
     def setUp(self):
-        load_dotenv(find_dotenv())
-        self.project_path = os.path.dirname(find_dotenv())
+        self.project_path = get_project_path()
         self.data_dir = os.path.join(self.project_path, 'crypr', 'tests', 'data')
         self.data = pd.read_csv(os.path.join(self.data_dir, 'test_raw_btc.csv'), index_col=0)
         self.Tx = 72
@@ -45,7 +43,7 @@ class TestPreprocessor(unittest.TestCase):
 class TestDWTSmoothPreprocessor(TestPreprocessor):
     def runTest(self):
         preprocessor = DWTSmoothPreprocessor(production=False, target_col=self.target_col, wavelet=self.wavelet,
-                                             Tx=self.Tx, Ty=self.Ty, name='TestDWTSmoothPreprocessor')
+                                             Tx=self.Tx, Ty=self.Ty)
         X, y = preprocessor.fit_transform(self.data)
         self.shapeCheck(X)
 
@@ -59,9 +57,8 @@ class TestDWTSmoothPreprocessor(TestPreprocessor):
 
 class TestSimplePreprocessor(TestPreprocessor):
     def runTest(self):
-        preprocessor = SimplePreprocessor(production=False, target_col=self.target_col,
-                                          moving_averages=self.moving_averages,
-                                          Tx=self.Tx, Ty=self.Ty, name='TestSimplePreprocessor')
+        preprocessor = SimplePreprocessor(production=False, target_col=self.target_col, Tx=self.Tx, Ty=self.Ty,
+                                          moving_averages=self.moving_averages)
         X, y = preprocessor.fit_transform(self.data)
         self.shapeCheck(X)
 

@@ -38,13 +38,7 @@ def predict(coin=None):
 
     cryptocompare_data = retrieve_all_data(coin, Tx + 1)
 
-    preprocessor = DWTSmoothPreprocessor(
-        production=True,
-        target_col=target,
-        Tx=Tx,
-        Ty=Ty,
-        wavelet=wavelet,
-        name='{}_preprocessor_{}'.format(__file__, coin))
+    preprocessor = DWTSmoothPreprocessor(production=True, target_col=target, Tx=Tx, Ty=Ty, wavelet=wavelet)
     preprocessed_data = preprocessor.fit(cryptocompare_data).transform(cryptocompare_data)
 
     if coin == 'ETH':

@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from scipy import signal
 import pywt
+from typing import Tuple, List, Union
 
 
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True) -> pd.DataFrame:
@@ -38,7 +39,7 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True) -> pd.DataFrame:
     return agg
 
 
-def series_to_predict_matrix(data, n_in=1, dropnan=True):
+def series_to_predict_matrix(data, n_in=1, dropnan=True) -> pd.DataFrame:
     n_vars = 1 if type(data) in (list, pd.Series) else data.shape[1]
     df = pd.DataFrame(data)
     cols, names = list(), list()
@@ -55,20 +56,20 @@ def series_to_predict_matrix(data, n_in=1, dropnan=True):
     return agg
 
 
-def truncate(input_df, keep_last=None) -> pd.DataFrame:
+def truncate(input_df, keep_last: int = None) -> pd.DataFrame:
     if keep_last is not None:
         return input_df.iloc[-keep_last:, :]
     return input_df
 
 
-def calc_target(input_df, target) -> pd.DataFrame:
+def calc_target(input_df, target: Union[str, int]) -> pd.DataFrame:
     df = input_df.copy()
     pct_change = df[target].pct_change()*100
     df['target'] = pct_change
     return df
 
 
-def calc_volume_ma(input_df, lags) -> pd.DataFrame:
+def calc_volume_ma(input_df, lags: List[int]) -> pd.DataFrame:
     df = input_df.copy()
     for ma in lags:
         df['vt_ma' + str(ma)] = df.volumeto.rolling(ma).mean()
@@ -76,7 +77,7 @@ def calc_volume_ma(input_df, lags) -> pd.DataFrame:
     return df
 
 
-def data_to_supervised(input_df, Tx, Ty) -> (pd.DataFrame, pd.Series):
+def data_to_supervised(input_df, Tx: int, Ty: int) -> Tuple[pd.DataFrame, pd.Series]:
     n_features = input_df.shape[1]
     X = series_to_supervised(data=input_df, n_in=Tx, n_out=Ty).iloc[:, :-(Ty*n_features)]
     y = series_to_supervised(data=input_df['target'], n_in=Tx, n_out=Ty).iloc[:, -Ty:]
@@ -91,14 +92,14 @@ def make_features(input_df, target_col, moving_average_lags, n_samples=None) -> 
         .dropna(how='any', axis=0)
 
 
-def make_single_feature(input_df, target_col, n_samples=None) -> pd.DataFrame:
+def make_single_feature(input_df, target_col: Union[str, int], n_samples: int = None) -> pd.DataFrame:
     return input_df.loc[:, [target_col]] \
         .pipe(truncate, n_samples) \
         .pipe(calc_target, target_col) \
         .dropna(how='any', axis=0)
 
 
-def continuous_wavelet_transform(input_df, N, wavelet='RICKER') -> np.ndarray:
+def continuous_wavelet_transform(input_df, N: int, wavelet: str = 'RICKER') -> np.ndarray:
     widths = np.arange(1, N + 1)
     if wavelet == 'RICKER':
         wt_transform_fun = lambda x: signal.cwt(x, wavelet=signal.ricker, widths=widths)
@@ -114,7 +115,7 @@ def discrete_wavelet_transform(input_df, wavelet, smooth_factor=1) -> np.ndarray
                                axis=-1, arr=input_df.values)
 
 
-def dwt_smoother(x, wavelet, smooth_factor=1) -> np.ndarray:
+def dwt_smoother(x, wavelet, smooth_factor: float = 1.) -> np.ndarray:
     cA, cD = pywt.dwt(x, wavelet)
     cAt = pywt.threshold(cA, smoothing_threshold(cA, smooth_factor), mode='soft')
     cDt = pywt.threshold(cD, smoothing_threshold(cD, smooth_factor), mode='soft')
@@ -122,5 +123,5 @@ def dwt_smoother(x, wavelet, smooth_factor=1) -> np.ndarray:
     return tx
 
 
-def smoothing_threshold(x, factor=1) -> float:
+def smoothing_threshold(x, factor: float = 1.) -> float:
     return np.std(x) * np.sqrt(factor*np.log(x.size))
