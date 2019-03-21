@@ -5,7 +5,5 @@ __all__ = [
     'models',
     'preprocessors',
     'util',
-    'visualize',
-    'wavelets',
     'zoo',
 ]

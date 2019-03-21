@@ -1,7 +1,6 @@
 """Functions to build features from raw data"""
 import numpy as np
 import pandas as pd
-from scipy import signal
 import pywt
 from typing import Tuple, List, Union
 
@@ -97,17 +96,6 @@ def make_single_feature(input_df, target_col: Union[str, int], n_samples: int = 
         .pipe(truncate, n_samples) \
         .pipe(calc_target, target_col) \
         .dropna(how='any', axis=0)
-
-
-def continuous_wavelet_transform(input_df, N: int, wavelet: str = 'RICKER') -> np.ndarray:
-    widths = np.arange(1, N + 1)
-    if wavelet == 'RICKER':
-        wt_transform_fun = lambda x: signal.cwt(x, wavelet=signal.ricker, widths=widths)
-    elif wavelet == 'MORLET':
-        wt_transform_fun = lambda x: pywt.cwt(x, scales=widths, wavelet='morl')[0]
-    else:
-        raise ValueError('{} wavelet is not supported'.format(wavelet))
-    return np.apply_along_axis(func1d=wt_transform_fun, axis=-1, arr=input_df.values)
 
 
 def discrete_wavelet_transform(input_df, wavelet, smooth_factor=1) -> np.ndarray:

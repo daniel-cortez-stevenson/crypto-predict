@@ -1,6 +1,7 @@
 """Main data preprocessing script"""
 import logging
-import os
+from os.path import join
+from os import makedirs
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -14,10 +15,9 @@ def main():
     logger = logging.getLogger(__name__)
     logger.info('Making features from raw data...')
 
-    project_path = get_project_path()
-    output_dir = os.path.join(project_path, 'data', 'processed')
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    data_dir = join(get_project_path(), 'data', 'raw')
+    output_dir = join(get_project_path(), 'data', 'processed')
+    makedirs(output_dir, exist_ok=True)
 
     coins = ['BTC', 'ETH']
     TARGET = 'close'
@@ -27,7 +27,7 @@ def main():
     WAVELET = 'haar'
 
     for SYM in coins:
-        raw_data_path = os.path.join(project_path, 'data', 'raw', SYM + '.csv')
+        raw_data_path = join(data_dir, SYM + '.csv')
         logger.info('Featurizing raw {} data from {}...'.format(SYM, raw_data_path))
 
         raw_df = pd.read_csv(raw_data_path, index_col=0)
@@ -37,7 +37,7 @@ def main():
 
         X_train, X_test, y_train, y_test = train_test_split(X_smoothed, y, test_size=TEST_SIZE, shuffle=False)
 
-        np.save(arr=X_train, file='{}/X_train_{}_{}_smooth_{}'.format(output_dir, SYM, WAVELET, Tx))
-        np.save(arr=X_test, file='{}/X_test_{}_{}_smooth_{}'.format(output_dir, SYM, WAVELET, Tx))
-        np.save(arr=y_train, file='{}/y_train_{}_{}_smooth_{}'.format(output_dir, SYM, WAVELET, Tx))
-        np.save(arr=y_test, file='{}/y_test_{}_{}_smooth_{}'.format(output_dir, SYM, WAVELET, Tx))
+        np.save(arr=X_train, file=join(output_dir, 'X_train_{}_{}_smooth_{}'.format(SYM, WAVELET, Tx)))
+        np.save(arr=X_test, file=join(output_dir, 'X_test_{}_{}_smooth_{}'.format(SYM, WAVELET, Tx)))
+        np.save(arr=y_train, file=join(output_dir, 'y_train_{}_{}_smooth_{}'.format(SYM, WAVELET, Tx)))
+        np.save(arr=y_test, file=join(output_dir, 'y_test_{}_{}_smooth_{}'.format(SYM, WAVELET, Tx)))

@@ -1,6 +1,7 @@
 """Main script to train models for the API to serve"""
 import logging
-import os
+from os.path import join
+from os import makedirs
 import click
 import numpy as np
 from keras.optimizers import Adam
@@ -21,11 +22,9 @@ def main(epochs, verbose):
     logger = logging.getLogger(__name__)
     logger.info('Creating and training models for API...')
 
-    project_path = get_project_path()
-    input_dir = os.path.join(project_path, 'data', 'processed')
-    output_dir = os.path.join(project_path, 'models')
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    input_dir = join(get_project_path(), 'data', 'processed')
+    output_dir = join(get_project_path(), 'models')
+    makedirs(output_dir, exist_ok=True)
 
     # Data params
     coins = ['BTC', 'ETH']
@@ -46,10 +45,10 @@ def main(epochs, verbose):
     for coin in coins:
         logger.info('Loading preprocessed {} data from {}'.format(coin, input_dir))
 
-        X_train = np.load('{}/X_train_{}_{}_smooth_{}.npy'.format(input_dir, coin, wavelet, tx))
-        X_test = np.load('{}/X_test_{}_{}_smooth_{}.npy'.format(input_dir, coin, wavelet, tx))
-        y_train = np.load('{}/y_train_{}_{}_smooth_{}.npy'.format(input_dir, coin, wavelet, tx))
-        y_test = np.load('{}/y_test_{}_{}_smooth_{}.npy'.format(input_dir, coin, wavelet, tx))
+        X_train = np.load(join(input_dir, 'X_train_{}_{}_smooth_{}.npy'.format(coin, wavelet, tx)))
+        X_test = np.load(join(input_dir, 'X_test_{}_{}_smooth_{}.npy'.format(coin, wavelet, tx)))
+        y_train = np.load(join(input_dir, 'y_train_{}_{}_smooth_{}.npy'.format(coin, wavelet, tx)))
+        y_test = np.load(join(input_dir, 'y_test_{}_{}_smooth_{}.npy'.format(coin, wavelet, tx)))
 
         logger.info('Building model {}...'.format(model_type))
         if model_type == 'ae_lstm':
@@ -59,7 +58,7 @@ def main(epochs, verbose):
             raise ValueError('Model type {} is not supported. Exiting.'.format(model_type))
         logger.info(model.estimator.summary())
 
-        tb_log_dir = os.path.join(output_dir, 'logs')
+        tb_log_dir = join(output_dir, 'logs')
         tensorboard = TensorBoard(log_dir=tb_log_dir, histogram_freq=0, batch_size=batch_size,
                                   write_graph=True, write_grads=False, write_images=False)
 
@@ -80,6 +79,6 @@ def main(epochs, verbose):
         )
 
         model_filename = '{}_smooth_{}x{}_{}_{}.h5'.format(model_type, num_channels, tx, wavelet, coin)
-        output_path = os.path.join(output_dir, model_filename)
+        output_path = join(output_dir, model_filename)
         logger.info('Saving trained model to {}...'.format(output_path))
         model.estimator.save(output_path)

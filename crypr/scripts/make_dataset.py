@@ -1,6 +1,7 @@
 """Main raw data download script"""
 import logging
-import os
+from os.path import join
+from os import makedirs
 import click
 from crypr.cryptocompare import retrieve_all_data
 from crypr.util import get_project_path
@@ -15,17 +16,13 @@ def main(hours):
     logger = logging.getLogger(__name__)
     logger.info('Downloading data from Cryptocompare ...')
 
-    project_path = get_project_path()
-
-    output_dir = os.path.join(project_path, 'data', 'raw')
-    if not os.path.exists(output_dir):
-        logger.info('Making output directory {}...'.format(output_dir))
-        os.makedirs(output_dir)
+    output_dir = join(get_project_path(), 'data', 'raw')
+    makedirs(output_dir, exist_ok=True)
 
     coins = ['BTC', 'ETH']
 
     for coin in coins:
         logger.info('Retrieving {} coin data from API...'.format(coin))
         raw_df = retrieve_all_data(coin=coin, num_hours=hours, comparison_symbol='USD')
-        output_path = os.path.join(output_dir, coin + '.csv')
+        output_path = join(output_dir, coin + '.csv')
         raw_df.to_csv(output_path)

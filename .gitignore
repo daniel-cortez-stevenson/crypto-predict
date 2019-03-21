@@ -91,5 +91,8 @@ notebooks/logs/
 !models/.gitkeep
 models/*
 
+# Jupyter Notebook HTML
+notebooks/*.html
+
 # secrets
 *.secret
