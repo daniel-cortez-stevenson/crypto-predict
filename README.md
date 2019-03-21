@@ -62,18 +62,16 @@ Notebook server will be at http://localhost:8888
 │   │   ├── data/
 │   │   ├── test_app.py
 │   │   ├── test_base.py
+│   │   ├── test_build.py
 │   │   ├── test_cryptocompare.py
 │   │   ├── test_model.py
 │   │   ├── test_preprocessor.py
 │   │   └── unit_main_base.py
 │   ├── build.py
 │   ├── cryptocompare.py
-│   ├── decorator.py
 │   ├── models.py
 │   ├── preprocessors.py
 │   ├── util.py
-│   ├── visualize.py
-│   ├── wavelets.py
 │   └── zoo.py
 ├── data/
 │   ├── external/
@@ -107,12 +105,12 @@ Notebook server will be at http://localhost:8888
 ├── requirements.txt            # Development Python packages
 ├── setup.cfg
 ├── setup.py
-├── .travis.yml
-├── .gitignore
-├── .env_template
-├── .env                        # Copied from .env_template
-├── .dockerignore
+├── .coveragerc
 ├── .coveralls.yml
-└── .coveragerc
+├── .dockerignore
+├── .env                        # Copied from .env_template
+├── .env_template
+├── .gitignore
+└── .travis.yml
 ```
 --------
