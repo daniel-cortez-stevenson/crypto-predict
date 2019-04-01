@@ -8,7 +8,7 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
     keywords='data_science cryptocurrency bitcoin ethereum deep_learning machine_learning prediction',
     author='Daniel C Stevenson',
