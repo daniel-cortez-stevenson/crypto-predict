@@ -27,7 +27,7 @@ from scipy import signal
 import pywt
 
 from crypr.util import get_project_path
-from crypr.build import make_single_feature, data_to_supervised, dwt_smoother
+from crypr.build import make_features, data_to_supervised, dwt_smoother
 
 
 # In[2]:
@@ -48,19 +48,19 @@ data = pd.read_csv(data_path, index_col=0)
 data.head()
 
 
-# In[4]:
+# In[5]:
 
 
 """
 Get percent change feature and target data.
 """
-df = make_single_feature(input_df=data, target_col='close')
-X, y = data_to_supervised(input_df=df[['target']], Tx=Tx, Ty=Ty)
+df = make_features(input_df=data, target_col='close')
+X, y = data_to_supervised(input_df=df[['target__close']], target_ix=-1, Tx=Tx, Ty=Ty)
 p(X.shape, y.shape)
 X.head()
 
 
-# In[5]:
+# In[6]:
 
 
 """
@@ -72,7 +72,7 @@ t_minus_1_x_values_except_first = X.iloc[1:,-1].values
 y_values_except_last.all() == t_minus_1_x_values_except_first.all()
 
 
-# In[6]:
+# In[7]:
 
 
 """
@@ -82,7 +82,7 @@ sample_ix = 1000
 sample = X.iloc[sample_ix].values
 
 
-# In[7]:
+# In[8]:
 
 
 """
@@ -96,7 +96,7 @@ plt.legend()
 plt.show()
 
 
-# In[8]:
+# In[9]:
 
 
 """
@@ -110,7 +110,7 @@ X_smooth = np.apply_along_axis(func1d=lambda x: dwt_smoother(x, wt_type, smooth_
 assert X_smooth.shape == X.shape
 
 
-# In[9]:
+# In[10]:
 
 
 """
@@ -119,7 +119,7 @@ Train Test Split.
 X_train, X_test, y_train, y_test = train_test_split(X_smooth, y, test_size=TEST_SIZE, shuffle=False)
 
 
-# In[10]:
+# In[11]:
 
 
 # """

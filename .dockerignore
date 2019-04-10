@@ -1,5 +1,9 @@
 # Not included in Docker build context
 .env
 .git
+./.ipynb_checkpoints
 ./data
+./models/logs
 ./notebooks/logs
+./notebooks/*.html
+./references

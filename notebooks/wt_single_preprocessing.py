@@ -10,7 +10,7 @@ get_ipython().run_line_magic('load_ext', 'autoreload')
 get_ipython().run_line_magic('autoreload', '2')
 p = print
 
-import os
+from os.path import join
 import pandas as pd
 import numpy as np
 
@@ -25,7 +25,7 @@ from scipy import signal
 import pywt
 
 from crypr.util import get_project_path
-from crypr.build import make_single_feature, data_to_supervised
+from crypr.build import make_features, data_to_supervised
 
 
 # In[2]:
@@ -37,7 +37,7 @@ Tx = 72
 Ty = 1
 TEST_SIZE = 0.05
 
-data_path = os.path.join(get_project_path(), 'data', 'raw', SYM + '.csv')
+data_path = join(get_project_path(), 'data', 'raw', SYM + '.csv')
 
 data = pd.read_csv(data_path, index_col=0)
 data.head()
@@ -49,9 +49,9 @@ data.head()
 """
 Get percent change feature and target data.
 """
-df = make_single_feature(input_df=data, target_col='close')
+df = make_features(input_df=data, target_col='close')
 p(df.head())
-X, y = data_to_supervised(input_df=df[['target']], Tx=Tx, Ty=Ty)
+X, y = data_to_supervised(input_df=df[['target__close']], target_ix=-1, Tx=Tx, Ty=Ty)
 p(X.shape, y.shape)
 X.head()
 
@@ -192,14 +192,14 @@ X_train, X_test, y_train, y_test = train_test_split(X_wt_coef, y, test_size=TEST
 """
 Save data.
 """
-output_dir = os.path.join(get_project_path(), 'data', 'processed')
+output_dir = join(get_project_path(), 'data', 'processed')
 
 np.save(arr=X_train, allow_pickle=True, 
-        file=os.path.join(output_dir, 'X_train_{}_{}_{}x{}'.format(SYM, wt_type, N, Tx)))
+        file=join(output_dir, 'X_train_{}_{}_{}x{}'.format(SYM, wt_type, N, Tx)))
 np.save(arr=X_test, allow_pickle=True,
-        file=os.path.join(output_dir, 'X_test_{}_{}_{}x{}'.format(SYM, wt_type, N, Tx)))
+        file=join(output_dir, 'X_test_{}_{}_{}x{}'.format(SYM, wt_type, N, Tx)))
 np.save(arr=y_train, allow_pickle=True,
-        file=os.path.join(output_dir, 'y_train_{}_{}_{}x{}'.format(SYM, wt_type, N, Tx)))
+        file=join(output_dir, 'y_train_{}_{}_{}x{}'.format(SYM, wt_type, N, Tx)))
 np.save(arr=y_test, allow_pickle=True,
-        file=os.path.join(output_dir, 'y_test_{}_{}_{}x{}'.format(SYM, wt_type, N, Tx)))
+        file=join(output_dir, 'y_test_{}_{}_{}x{}'.format(SYM, wt_type, N, Tx)))
 

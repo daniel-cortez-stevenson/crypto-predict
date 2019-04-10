@@ -1,8 +1,10 @@
 """Functions to build features from raw data"""
 import numpy as np
 import pandas as pd
-import pywt
-from typing import Tuple, List, Union
+from sklearn.compose import ColumnTransformer
+from typing import Tuple, Union
+from crypr.types import ArrayLike
+from crypr.transformers import PassthroughTransformer, PercentChangeTransformer, MovingAverageTransformer
 
 
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True) -> pd.DataFrame:
@@ -55,61 +57,37 @@ def series_to_predict_matrix(data, n_in=1, dropnan=True) -> pd.DataFrame:
     return agg
 
 
-def truncate(input_df, keep_last: int = None) -> pd.DataFrame:
-    if keep_last is not None:
-        return input_df.iloc[-keep_last:, :]
-    return input_df
-
-
-def calc_target(input_df, target: Union[str, int]) -> pd.DataFrame:
-    df = input_df.copy()
-    pct_change = df[target].pct_change()*100
-    df['target'] = pct_change
-    return df
-
-
-def calc_volume_ma(input_df, lags: List[int]) -> pd.DataFrame:
-    df = input_df.copy()
-    for ma in lags:
-        df['vt_ma' + str(ma)] = df.volumeto.rolling(ma).mean()
-        df['vf_ma' + str(ma)] = df.volumefrom.rolling(ma).mean()
-    return df
-
-
-def data_to_supervised(input_df, Tx: int, Ty: int) -> Tuple[pd.DataFrame, pd.Series]:
+def data_to_supervised(input_df, target_ix: Union[str, int], Tx: int, Ty: int) -> Tuple[pd.DataFrame, pd.Series]:
     n_features = input_df.shape[1]
     X = series_to_supervised(data=input_df, n_in=Tx, n_out=Ty).iloc[:, :-(Ty*n_features)]
-    y = series_to_supervised(data=input_df['target'], n_in=Tx, n_out=Ty).iloc[:, -Ty:]
+    y = series_to_supervised(data=input_df.iloc[:, [target_ix]], n_in=Tx, n_out=Ty).iloc[:, -Ty:]
     return X, y
 
 
-def make_features(input_df, target_col, moving_average_lags, n_samples=None) -> pd.DataFrame:
-    return input_df[['open', 'high', 'close', 'low', 'volumeto', 'volumefrom']] \
-        .pipe(truncate, n_samples) \
-        .pipe(calc_target, target_col) \
-        .pipe(calc_volume_ma, moving_average_lags) \
-        .dropna(how='any', axis=0)
+def make_features(input_df, target_col, keep_cols=None, ma_lags=None, ma_cols=None, n_samples=None) -> pd.DataFrame:
+    transformers = list()
+    if keep_cols:
+        transformers.extend([('passthrough', PassthroughTransformer(), keep_cols)])
+    if ma_lags and ma_cols:
+        transformers.extend([('ma' + str(n), MovingAverageTransformer(n), ma_cols) for n in ma_lags])
+    transformers.extend([('target', PercentChangeTransformer(), [target_col])])
+    ct = ColumnTransformer(transformers=transformers, remainder='drop', n_jobs=-1)
+
+    arr = ct.fit_transform(input_df)
+    arr = strip_nan_rows(arr)
+    if n_samples:
+        arr = keep_last_n_rows(arr, n_samples)
+    return pd.DataFrame(data=arr, columns=list(ct.get_feature_names()))
 
 
-def make_single_feature(input_df, target_col: Union[str, int], n_samples: int = None) -> pd.DataFrame:
-    return input_df.loc[:, [target_col]] \
-        .pipe(truncate, n_samples) \
-        .pipe(calc_target, target_col) \
-        .dropna(how='any', axis=0)
+def strip_nan_rows(arr: ArrayLike) -> ArrayLike:
+    return arr[~np.isnan(arr).any(axis=1)]
 
 
-def discrete_wavelet_transform(input_df, wavelet, smooth_factor=1) -> np.ndarray:
-    return np.apply_along_axis(func1d=lambda x: dwt_smoother(x, wavelet, smooth_factor),
-                               axis=-1, arr=input_df.values)
+def keep_last_n_rows(arr: ArrayLike, n: int) -> ArrayLike:
+    return arr[-n:, :]
 
 
-def dwt_smoother(x, wavelet, smooth_factor: float = 1.) -> np.ndarray:
-    cA, cD = pywt.dwt(x, wavelet)
-    cAt = pywt.threshold(cA, smoothing_threshold(cA, smooth_factor), mode='soft')
-    cDt = pywt.threshold(cD, smoothing_threshold(cD, smooth_factor), mode='soft')
-    tx = pywt.idwt(cAt, cDt, wavelet)
-    return tx
-
-
-def smoothing_threshold(x, factor: float = 1.) -> float:
-    return np.std(x) * np.sqrt(factor*np.log(x.size))
+def make_3d(arr: ArrayLike, tx: int, num_channels: int) -> np.ndarray:
+    arr = np.expand_dims(arr, axis=-1)
+    return np.reshape(arr, (-1, tx, num_channels))

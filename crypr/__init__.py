@@ -3,7 +3,8 @@ __all__ = [
     'build',
     'cryptocompare',
     'models',
-    'preprocessors',
+    'transformers',
+    'types',
     'util',
     'zoo',
 ]

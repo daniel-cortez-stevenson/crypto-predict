@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from crypr.util import get_project_path, my_logger
-from crypr.preprocessors import DWTSmoothPreprocessor
+from crypr.build import make_features, data_to_supervised, make_3d
 
 
 @my_logger
@@ -21,7 +21,6 @@ def main():
     Tx = 72
     Ty = 1
     TEST_SIZE = 0.05
-    WAVELET = 'haar'
 
     for SYM in coins:
         raw_data_path = join(data_dir, SYM + '.csv')
@@ -29,12 +28,18 @@ def main():
 
         raw_df = pd.read_csv(raw_data_path, index_col=0)
 
-        preprocessor = DWTSmoothPreprocessor(production=False, target_col=TARGET, Tx=Tx, Ty=Ty, wavelet=WAVELET)
-        X_smoothed, y = preprocessor.fit_transform(raw_df)
+        feature_df = make_features(raw_df, target_col=TARGET,
+                                   keep_cols=['close', 'high', 'low', 'volumeto', 'volumefrom'],
+                                   ma_lags=[6, 12, 24, 48], ma_cols=['close', 'volumefrom', 'volumeto'])
 
-        X_train, X_test, y_train, y_test = train_test_split(X_smoothed, y, test_size=TEST_SIZE, shuffle=False)
+        X, y = data_to_supervised(feature_df, target_ix=-1, Tx=Tx, Ty=Ty)
 
-        np.save(arr=X_train, file=join(output_dir, 'X_train_{}_{}_smooth_{}'.format(SYM, WAVELET, Tx)))
-        np.save(arr=X_test, file=join(output_dir, 'X_test_{}_{}_smooth_{}'.format(SYM, WAVELET, Tx)))
-        np.save(arr=y_train, file=join(output_dir, 'y_train_{}_{}_smooth_{}'.format(SYM, WAVELET, Tx)))
-        np.save(arr=y_test, file=join(output_dir, 'y_test_{}_{}_smooth_{}'.format(SYM, WAVELET, Tx)))
+        num_features = int(X.shape[1]/Tx)
+        X = make_3d(X, tx=Tx, num_channels=num_features)
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SIZE, shuffle=False)
+
+        np.save(arr=X_train, file=join(output_dir, 'X_train_{}'.format(SYM)))
+        np.save(arr=X_test, file=join(output_dir, 'X_test_{}'.format(SYM)))
+        np.save(arr=y_train, file=join(output_dir, 'y_train_{}'.format(SYM)))
+        np.save(arr=y_test, file=join(output_dir, 'y_test_{}'.format(SYM)))

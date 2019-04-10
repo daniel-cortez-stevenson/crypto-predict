@@ -1,5 +1,4 @@
 """Welcome to the Zoo. All the different models - for your viewing!"""
-import numpy as np
 from keras import Model
 from keras.layers import Input, LSTM, BatchNormalization, Dense, Conv1D, Activation, Dropout, Reshape
 from keras.regularizers import l1
@@ -13,26 +12,25 @@ def LSTM_triggerNG(num_inputs, num_channels, num_outputs, kernel_init='normal', 
         - BiDirectional???
         - Custom, guesswork kernel_size and strides in Conv1D
     """
+    X_input = Input(shape=(num_channels, num_inputs), dtype='float32')
 
-    model_input = Input(shape=(num_channels, num_inputs), dtype='float32')
-
-    X = Conv1D(196, kernel_size=4, strides=2, kernel_initializer=kernel_init, bias_initializer=bias_init)(model_input)
+    X = Conv1D(196, kernel_size=8, strides=2, kernel_initializer=kernel_init, bias_initializer=bias_init)(X_input)
     X = BatchNormalization(axis=-1)(X)
     X = Activation('relu')(X)
-    X = Dropout(0.8)(X)
+    X = Dropout(0.5)(X)
 
     X = LSTM(units=128, return_sequences=True, kernel_initializer=kernel_init, bias_initializer=bias_init)(X)
-    X = Dropout(0.8)(X)
+    X = Dropout(0.5)(X)
     X = BatchNormalization(axis=-1)(X)
 
     X = LSTM(units=128, return_sequences=False, kernel_initializer=kernel_init, bias_initializer=bias_init)(X)
-    X = Dropout(0.8)(X)
+    X = Dropout(0.5)(X)
     X = BatchNormalization(axis=-1)(X)
-    X = Dropout(0.8)(X)
+    X = Dropout(0.5)(X)
 
     X = Dense(num_outputs, kernel_initializer=kernel_init, bias_initializer=bias_init, activation='linear')(X)
 
-    return Model(inputs=model_input, outputs=X)
+    return Model(inputs=X_input, outputs=X)
 
 
 def LSTM_WSAEs(num_inputs, num_channels=1, num_outputs=1, encoding_dim=10, kernel_init='normal', bias_init='zeros') -> Model:
@@ -54,7 +52,7 @@ def LSTM_WSAEs(num_inputs, num_channels=1, num_outputs=1, encoding_dim=10, kerne
     """
 
     # Encoder/Decoder hidden unit size halfway between num_inputs and encoding_dim
-    hidden_dim = num_inputs - np.int((num_inputs - encoding_dim) / 2)
+    hidden_dim = num_inputs - int((num_inputs - encoding_dim) / 2)
 
     # Autoencoder
     X_input = Input(shape=(num_channels, num_inputs), dtype='float32')
@@ -75,43 +73,33 @@ def LSTM_WSAEs(num_inputs, num_channels=1, num_outputs=1, encoding_dim=10, kerne
 
 def build_ae_lstm(num_inputs, num_channels=1, num_outputs=1, kernel_init='normal', bias_init='zeros') -> Model:
     """Own implementation of a stacked autoencoder with LSTM for smoothed time-series data.
-
-    :param num_inputs:
-    :param num_channels:
-    :param num_outputs:
-    :param kernel_init:
-    :param bias_init:
-    :return model: Keras Model instance
-
     Notes:
         - encoded layer is a sparse encoder (l1 regularized)
     """
-    hidden_dim = np.int(num_inputs / 2)
-    encoding_dim = np.int(hidden_dim / 2)
+    hidden_dim = int(num_inputs / 2)
+    encoding_dim = int(hidden_dim / 2)
 
     X_input = Input(shape=(num_channels, num_inputs), dtype='float32', name='input_0')
-
-    # Autoencoder
+    # Encoder
     encoder = Dense(units=hidden_dim, activation='relu', name='encoder')(X_input)
     encoded = Dense(units=encoding_dim, activation='relu', activity_regularizer=l1(1e-6), name='encoded')(encoder)
+    # Decoder
     decoder = Dense(units=hidden_dim, activation='relu', name='decoder')(encoded)
     decoded = Dense(units=num_inputs, activation='linear', name='decoded')(decoder)
-
-    # Dual LSTM
+    # LSTM One
     X = Reshape(target_shape=(encoding_dim, num_channels), name='rs_0')(encoded)
-    X = LSTM(units=64, return_sequences=True, kernel_initializer=kernel_init, bias_initializer=bias_init,
-             name='lstm_0')(X)
+    X = LSTM(units=64, return_sequences=True, kernel_initializer=kernel_init, bias_initializer=bias_init, name='lstm_0')(X)
     X = Dropout(0.2, name='dr_0')(X)
     X = BatchNormalization(axis=-1, name='bn_0')(X)
-
-    X = LSTM(units=64, return_sequences=False, kernel_initializer=kernel_init, bias_initializer=bias_init,
-             name='lstm_1')(X)
+    # LSTM Two
+    X = LSTM(units=64, return_sequences=False, kernel_initializer=kernel_init, bias_initializer=bias_init, name='lstm_1')(X)
     X = Dropout(0.2, name='dr_1')(X)
     X = BatchNormalization(axis=-1, name='bn_1')(X)
     X = Dropout(0.2, name='dr_2')(X)
 
-    # Dense Activation
-    X = Dense(num_outputs, kernel_initializer=kernel_init, bias_initializer=bias_init, activation='linear',
-              name='dense_0')(X)
+    # Output
+    X = Dense(num_outputs, kernel_initializer=kernel_init, bias_initializer=bias_init, activation='linear', name='dense_0')(X)
 
     return Model(inputs=[X_input], outputs=[decoded, X])
+
+
