@@ -22,9 +22,9 @@ make test
 
 ## Get/Process Data and Train Models with crypr-* Commands
 ```bash
-crypr-data
+crypr-data --hours 6000
 crypr-features
-crypr-models
+crypr-models --epochs 20
 ```
 
 ## Run the API with Docker
@@ -61,16 +61,14 @@ Notebook server will be at http://localhost:8888
 │   ├── tests/
 │   │   ├── data/
 │   │   ├── test_app.py
-│   │   ├── test_base.py
 │   │   ├── test_build.py
 │   │   ├── test_cryptocompare.py
-│   │   ├── test_model.py
-│   │   ├── test_preprocessor.py
-│   │   └── unit_main_base.py
+│   │   └── test_model.py
 │   ├── build.py
 │   ├── cryptocompare.py
 │   ├── models.py
-│   ├── preprocessors.py
+│   ├── transformers.py
+│   ├── types.py
 │   ├── util.py
 │   └── zoo.py
 ├── data/
@@ -85,9 +83,11 @@ Notebook server will be at http://localhost:8888
 ├── notebooks/
 │   ├── cwt_rnn_model_dev.ipynb
 │   ├── data_exploration.ipynb
+│   ├── jupyter_notebook_config.py
 │   ├── model_dev.ipynb
 │   ├── preprocessing.ipynb
 │   ├── rnn_model_dev.ipynb
+│   ├── self-attention-model-dev.ipynb
 │   ├── statistical_model_dev.ipynb
 │   ├── tree_model_dev.ipynb
 │   ├── wt_multiple_preprocessing.ipynb
