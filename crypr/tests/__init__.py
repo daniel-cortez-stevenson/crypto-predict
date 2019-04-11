@@ -4,4 +4,5 @@ __all__ = [
     'test_build',
     'test_cryptocompare',
     'test_model',
+    'test_transformers',
 ]

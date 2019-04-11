@@ -4,7 +4,7 @@ import pywt
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
-class BaseTransformer:
+class BaseTransformer(BaseEstimator, TransformerMixin):
     def __init__(self):
         self.feature_names = None
 
@@ -18,11 +18,17 @@ class BaseTransformer:
         except AttributeError as e:
             print(e)
 
+    def transform(self, X):
+        return X
+
     def get_feature_names(self):
         return self.feature_names
 
 
-class MovingAverageTransformer(BaseEstimator, TransformerMixin, BaseTransformer):
+PassthroughTransformer = BaseTransformer
+
+
+class MovingAverageTransformer(BaseTransformer):
     def __init__(self, n: int):
         self.n = n
         BaseTransformer.__init__(self)
@@ -39,7 +45,7 @@ class MovingAverageTransformer(BaseEstimator, TransformerMixin, BaseTransformer)
         return na_fill
 
 
-class PercentChangeTransformer(BaseEstimator, TransformerMixin, BaseTransformer):
+class PercentChangeTransformer(BaseTransformer):
     def transform(self, X):
         X = np.divide(np.diff(X, axis=0), X[:-1])*100
         na_fill = self.na_fill_array(X.shape[1])
@@ -51,12 +57,7 @@ class PercentChangeTransformer(BaseEstimator, TransformerMixin, BaseTransformer)
         return na_fill
 
 
-class PassthroughTransformer(BaseEstimator, TransformerMixin, BaseTransformer):
-    def transform(self, X):
-        return X
-
-
-class HaarSmoothTransformer(BaseEstimator, TransformerMixin, BaseTransformer):
+class HaarSmoothTransformer(BaseTransformer):
     def __init__(self, smooth_factor):
         self.smooth_factor = smooth_factor
         BaseTransformer.__init__(self)
