@@ -7,7 +7,7 @@ crypto-predict
 
 This project is a easily reproducible Python/Docker project to create an API that predicts the price of BTC and ETH using OHLCV data. The API is defined using Zalando's connexion package, which leverages the Flask framework.
 
-Current implementation smooths the raw close % change data (previous 72 hours) using a Haar discrete wavelet transformation. This data is fed into a stacked autoencoder. The encoded layer of the autoencoder feeds into a dual-layer LSTM with linear activation function. The autoencoder and LSTM are trained simultaneously (network graph coming soon!).
+Current implementation smooths the raw close % change data (previous 72 hours). This data is fed into a 1D Convolutional Layer, which feeds into a dual-layer LSTM with linear activation function (network graph coming soon!).
 
 ***Note: Anaconda is recommended to manage the project environment. Environment creation without Anaconda is untested***
 
@@ -22,7 +22,7 @@ make test
 
 ## Get/Process Data and Train Models with crypr-* Commands
 ```bash
-crypr-data --hours 6000
+crypr-data --hours 10000
 crypr-features
 crypr-models --epochs 20
 ```
@@ -31,7 +31,7 @@ crypr-models --epochs 20
 ```bash
 make run_docker
 ```
-Now find your prediction at http://localhost:5000/predict?coin={ETH or BTC}
+Now find your prediction at http://localhost:5000/predict?coin=BTC
 
 ## Jupyter Notebooks
 The Jupyter Notebooks in this project serve as rich visual examples of how data preprocessing and model training is done for the prediction API.
@@ -44,6 +44,7 @@ Notebook server will be at http://localhost:8888
 
 ## Future Directions
 - More coins!
+- More models (xgboost)
 - Visualize price predictions in a web app based on the developed prediction api
 - Use unstructured text data to calculate sentiment or other metrics to use in prediction
 - Use transfer learning from financial markets and other crypto coins to enhance the RNN model
@@ -63,7 +64,8 @@ Notebook server will be at http://localhost:8888
 │   │   ├── test_app.py
 │   │   ├── test_build.py
 │   │   ├── test_cryptocompare.py
-│   │   └── test_model.py
+│   │   ├── test_model.py
+│   │   └── test_transformers.py
 │   ├── build.py
 │   ├── cryptocompare.py
 │   ├── models.py
