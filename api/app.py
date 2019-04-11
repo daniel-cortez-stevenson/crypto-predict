@@ -38,7 +38,7 @@ def predict(coin=None):
                                       ma_lags=[6, 12, 24, 48], ma_cols=['close', 'volumefrom', 'volumeto'])
     time_series_data = series_to_predict_matrix(preprocessed_data, Tx)
     n_features = int(time_series_data.shape[1]/Tx)
-    model_input_data = make_3d(time_series_data, Tx, num_channels=n_features)
+    model_input_data = make_3d(arr=time_series_data, tx=Tx, num_channels=n_features)
 
     if coin == 'ETH':
         model = eth_model

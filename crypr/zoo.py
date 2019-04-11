@@ -4,7 +4,7 @@ from keras.layers import Input, LSTM, BatchNormalization, Dense, Conv1D, Activat
 from keras.regularizers import l1
 
 
-def LSTM_triggerNG(num_inputs, num_channels, num_outputs, kernel_init='normal', bias_init='zeros') -> Model:
+def LSTM_triggerNG(tx, num_channels, num_outputs, kernel_init='normal', bias_init='zeros') -> Model:
     """Modified from Andrew Ng's Deeplearning.ai Sequence Modeling course on Coursera.
     Originally used for trigger word detection.
     Notes:
@@ -12,7 +12,7 @@ def LSTM_triggerNG(num_inputs, num_channels, num_outputs, kernel_init='normal', 
         - BiDirectional???
         - Custom, guesswork kernel_size and strides in Conv1D
     """
-    X_input = Input(shape=(num_channels, num_inputs), dtype='float32')
+    X_input = Input(shape=(tx, num_channels), dtype='float32')
 
     X = Conv1D(196, kernel_size=8, strides=2, kernel_initializer=kernel_init, bias_initializer=bias_init)(X_input)
     X = BatchNormalization(axis=-1)(X)
@@ -33,7 +33,7 @@ def LSTM_triggerNG(num_inputs, num_channels, num_outputs, kernel_init='normal', 
     return Model(inputs=X_input, outputs=X)
 
 
-def LSTM_WSAEs(num_inputs, num_channels=1, num_outputs=1, encoding_dim=10, kernel_init='normal', bias_init='zeros') -> Model:
+def LSTM_WSAEs(tx, num_channels=1, num_outputs=1, encoding_dim=10, kernel_init='normal', bias_init='zeros') -> Model:
     """Stacked Autoencoder + LSTM from Paper - WORK IN PROGRESS
     TODO:
         ?num_delays = 5
@@ -52,14 +52,14 @@ def LSTM_WSAEs(num_inputs, num_channels=1, num_outputs=1, encoding_dim=10, kerne
     """
 
     # Encoder/Decoder hidden unit size halfway between num_inputs and encoding_dim
-    hidden_dim = num_inputs - int((num_inputs - encoding_dim) / 2)
+    hidden_dim = tx - int((tx - encoding_dim) / 2)
 
     # Autoencoder
-    X_input = Input(shape=(num_channels, num_inputs), dtype='float32')
+    X_input = Input(shape=(tx, num_channels), dtype='float32')
     encoder = Dense(hidden_dim, activation='relu', name='encoder')(X_input)
     encoded = Dense(encoding_dim, activation='relu', name='encoded')(encoder)
     decoder = Dense(hidden_dim, activation='relu', name='decoder')(encoded)
-    decoded = Dense(num_inputs, activation='linear', name='decoded')(decoder)
+    decoded = Dense(units=tx, activation='linear', name='decoded')(decoder)
 
     # LSTM
     X = Reshape(target_shape=(encoding_dim, num_channels), name='rs_0')(encoded)
@@ -71,21 +71,21 @@ def LSTM_WSAEs(num_inputs, num_channels=1, num_outputs=1, encoding_dim=10, kerne
     return Model(inputs=[X_input], outputs=[decoded, X])
 
 
-def build_ae_lstm(num_inputs, num_channels=1, num_outputs=1, kernel_init='normal', bias_init='zeros') -> Model:
+def build_ae_lstm(tx, num_channels=1, num_outputs=1, kernel_init='normal', bias_init='zeros') -> Model:
     """Own implementation of a stacked autoencoder with LSTM for smoothed time-series data.
     Notes:
         - encoded layer is a sparse encoder (l1 regularized)
     """
-    hidden_dim = int(num_inputs / 2)
+    hidden_dim = int(tx / 2)
     encoding_dim = int(hidden_dim / 2)
 
-    X_input = Input(shape=(num_channels, num_inputs), dtype='float32', name='input_0')
+    X_input = Input(shape=(num_channels, tx), dtype='float32', name='input_0')
     # Encoder
     encoder = Dense(units=hidden_dim, activation='relu', name='encoder')(X_input)
     encoded = Dense(units=encoding_dim, activation='relu', activity_regularizer=l1(1e-6), name='encoded')(encoder)
     # Decoder
     decoder = Dense(units=hidden_dim, activation='relu', name='decoder')(encoded)
-    decoded = Dense(units=num_inputs, activation='linear', name='decoded')(decoder)
+    decoded = Dense(units=tx, activation='linear', name='decoded')(decoder)
     # LSTM One
     X = Reshape(target_shape=(encoding_dim, num_channels), name='rs_0')(encoded)
     X = LSTM(units=64, return_sequences=True, kernel_initializer=kernel_init, bias_initializer=bias_init, name='lstm_0')(X)

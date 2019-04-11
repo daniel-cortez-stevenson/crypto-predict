@@ -46,14 +46,14 @@ def main(epochs, verbose):
 
         Outputs = namedtuple('Outputs', 'train, test')
         print('Building model {}...'.format(model_type))
+        tx, num_channels = X_train.shape[1:]
+        ty = y_train.shape[1]
         if model_type == 'ae_lstm':
-            estimator = build_ae_lstm(num_inputs=X_train.shape[2], num_channels=X_train.shape[1],
-                                      num_outputs=y_train.shape[1])
+            estimator = build_ae_lstm(tx=tx, num_channels=num_channels, num_outputs=ty)
             model = RegressionModel(estimator)
             outputs = Outputs([X_train, y_train], [X_test, y_test])
         elif model_type == 'lstm_ng':
-            estimator = LSTM_triggerNG(num_inputs=X_train.shape[2], num_channels=X_train.shape[1],
-                                       num_outputs=y_train.shape[1])
+            estimator = LSTM_triggerNG(tx=tx, num_channels=num_channels, num_outputs=ty)
             model = RegressionModel(estimator)
             outputs = Outputs([y_train], [y_test])
         else:
