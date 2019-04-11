@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from crypr.models import RegressionModel
-from crypr.zoo import LSTM_WSAEs, build_ae_lstm
+from crypr.zoo import LSTM_triggerNG
 
 
 class TestModel(unittest.TestCase):
@@ -9,19 +9,17 @@ class TestModel(unittest.TestCase):
         np.random.seed(31337)
 
         batch_size = 32
-        Tx = 72
+        tx = 72
+        num_channels = 1
+        ty = 1
 
-        self.X = np.random.randint(low=0, high=100, size=(batch_size, 1, 72)) / 100
-        self.y = np.random.randint(low=0, high=1000, size=(batch_size,))
+        self.X = np.random.randint(low=0, high=100, size=(batch_size, tx, num_channels)) / 100
+        self.y = np.random.randint(low=0, high=1000, size=(batch_size, ty))
         self.models = [
-            RegressionModel(build_ae_lstm(Tx, 1, 1)),
-            RegressionModel(LSTM_WSAEs(Tx, 1, 1)),
+            RegressionModel(LSTM_triggerNG(tx=tx, num_channels=num_channels, num_outputs=ty)),
         ]
-        self.model_inputs = [self.X, self.X]
-        self.model_outputs = [
-            [self.X, self.y],
-            [self.X, self.y],
-        ]
+        self.model_inputs = [self.X]
+        self.model_outputs = [self.y]
         self.fits = []
 
         # Train all models for 1 epoch

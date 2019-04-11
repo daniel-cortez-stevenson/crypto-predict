@@ -6,7 +6,7 @@ import numpy as np
 from keras.optimizers import Adam
 from keras.callbacks import TensorBoard
 from crypr.models import RegressionModel
-from crypr.zoo import build_ae_lstm, LSTM_triggerNG
+from crypr.zoo import LSTM_triggerNG
 from crypr.util import get_project_path, my_logger
 from collections import namedtuple
 
@@ -48,11 +48,7 @@ def main(epochs, verbose):
         print('Building model {}...'.format(model_type))
         tx, num_channels = X_train.shape[1:]
         ty = y_train.shape[1]
-        if model_type == 'ae_lstm':
-            estimator = build_ae_lstm(tx=tx, num_channels=num_channels, num_outputs=ty)
-            model = RegressionModel(estimator)
-            outputs = Outputs([X_train, y_train], [X_test, y_test])
-        elif model_type == 'lstm_ng':
+        if model_type == 'lstm_ng':
             estimator = LSTM_triggerNG(tx=tx, num_channels=num_channels, num_outputs=ty)
             model = RegressionModel(estimator)
             outputs = Outputs([y_train], [y_test])
