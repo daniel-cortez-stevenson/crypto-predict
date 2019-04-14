@@ -34,8 +34,13 @@ install_dev: update_install
 run_jupyter:
 	jupyter notebook --config ./notebooks/jupyter_notebook_config.py
 
+test_all: clean_test test test_notebooks
+
 test: clean_test
 	coverage run setup.py test
+
+test_notebooks: clean_test
+	$(PYTHON_INTERPRETER) -m pytest --nbval-lax ./notebooks
 
 run_docker: clean
 	docker build -f ./docker/Dockerfile -t crypr-api .

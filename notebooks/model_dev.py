@@ -3,26 +3,25 @@
 
 # # Model Development
 
-# In[26]:
+# In[1]:
 
 
 get_ipython().run_line_magic('load_ext', 'autoreload')
 get_ipython().run_line_magic('autoreload', '2')
 p = print
 
-import os
+from os.path import join
+import pickle
 
+import numpy as np
 import pandas as pd
-
 from sklearn.linear_model import LinearRegression, Lasso, MultiTaskLassoCV, Ridge, RidgeCV, MultiTaskElasticNet, MultiTaskElasticNetCV, ElasticNet, ElasticNetCV
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 from crypr.util import get_project_path
 
-import pickle
 
-
-# In[19]:
+# In[2]:
 
 
 """
@@ -33,23 +32,25 @@ Ty = 1
 Tx = 72
 MAX_LAG = 72
 wavelet = 'haar_smooth'
-data_dir = os.path.join(get_project_path(), 'data', 'processed')
-models_dir = os.path.join(get_project_path(), 'models')
+data_dir = join(get_project_path(), 'data', 'processed')
+models_dir = join(get_project_path(), 'models')
 
-X_train = pd.read_csv(os.path.join(data_dir, 'X_train_{}_tx{}_ty{}_flag{}.csv'.format(SYM, Tx, Ty, MAX_LAG)))
-Y_train = pd.read_csv(os.path.join(data_dir, 'y_train_{}_tx{}_ty{}_flag{}.csv'.format(SYM, Tx, Ty, MAX_LAG)))
-X_test = pd.read_csv(os.path.join(data_dir, 'X_test_{}_tx{}_ty{}_flag{}.csv'.format(SYM, Tx, Ty, MAX_LAG)))
-Y_test = pd.read_csv(os.path.join(data_dir, 'y_test_{}_tx{}_ty{}_flag{}.csv'.format(SYM, Tx, Ty, MAX_LAG)))
+X_train = np.load(join(data_dir, 'X_train_{}.npy'.format(SYM)))
+Y_train = np.load(join(data_dir, 'y_train_{}.npy'.format(SYM)))
+X_test = np.load(join(data_dir, 'X_test_{}.npy'.format(SYM)))
+Y_test = np.load(join(data_dir, 'y_test_{}.npy'.format(SYM)))
 
-N_FEATURES = int(X_train.shape[1]/Tx)
+N_FEATURES = X_train.shape[2]
 
 p(X_train.shape)
-X_train.head()
+X_train = X_train.reshape((-1, Tx*N_FEATURES))
+X_test = X_test.reshape((-1, Tx*N_FEATURES))
+p(X_train.shape)
 
 
 # # Let's try a simple linear regression model
 
-# In[18]:
+# In[3]:
 
 
 lr_model = LinearRegression()
@@ -60,19 +61,19 @@ p(mean_absolute_error(y_pred=lr_predict, y_true=Y_test))
 p(mean_squared_error(y_pred=lr_predict, y_true=Y_test))
 
 
-# In[21]:
+# In[4]:
 
 
 # Save model
-with open(os.path.join(models_dir, 'linear_model_{}.pkl'.format(SYM)), 'wb') as output_file:
-    s = pickle.dump(lr_model, output_file)
+# with open(join(models_dir, 'linear_model_{}.pkl'.format(SYM)), 'wb') as output_file:
+#     s = pickle.dump(lr_model, output_file)
 
 
 # # Other Linear Regression
 
 # ## Lasso
 
-# In[23]:
+# In[5]:
 
 
 lasso_params = {
@@ -91,7 +92,7 @@ p(mean_squared_error(lasso_predict, Y_test))
 # ## Ridge
 # 
 
-# In[25]:
+# In[6]:
 
 
 ridge_model = Ridge(alpha=0.01)
@@ -105,7 +106,7 @@ p(mean_squared_error(ridge_predict, Y_test))
 
 # ## Elastic Net
 
-# In[27]:
+# In[7]:
 
 
 enet_params = {

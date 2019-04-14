@@ -8,7 +8,7 @@ get_ipython().run_line_magic('load_ext', 'autoreload')
 get_ipython().run_line_magic('autoreload', '2')
 p = print
 
-import os
+from os.path import join
 import pickle
 
 import pandas as pd
@@ -32,7 +32,7 @@ SYM = 'BTC'
 Ty = 1
 Tx = 72
 MAX_LAG = 72
-data_dir = os.path.join(get_project_path(), 'data', 'processed')
+data_dir = join(get_project_path(), 'data', 'processed')
 
 
 # In[3]:
@@ -41,16 +41,21 @@ data_dir = os.path.join(get_project_path(), 'data', 'processed')
 """
 Import Data.
 """
-def load_preprocessed_data(from_dir, sym, Tx, Ty, max_lag):
-    X_train = pd.read_csv(os.path.join(data_dir, 'X_train_{}_tx{}_ty{}_flag{}.csv'.format(SYM, Tx, Ty, MAX_LAG)))
-    y_train = pd.read_csv(os.path.join(data_dir, 'y_train_{}_tx{}_ty{}_flag{}.csv'.format(SYM, Tx, Ty, MAX_LAG)))
-    X_test = pd.read_csv(os.path.join(data_dir, 'X_test_{}_tx{}_ty{}_flag{}.csv'.format(SYM, Tx, Ty, MAX_LAG)))
-    y_test = pd.read_csv(os.path.join(data_dir, 'y_test_{}_tx{}_ty{}_flag{}.csv'.format(SYM, Tx, Ty, MAX_LAG)))
+def load_preprocessed_data(from_dir, sym):
+    X_train = np.load(join(data_dir, 'X_train_{}.npy'.format(SYM)))
+    y_train = np.load(join(data_dir, 'y_train_{}.npy'.format(SYM)))
+    X_test = np.load(join(data_dir, 'X_test_{}.npy'.format(SYM)))
+    y_test = np.load(join(data_dir, 'y_test_{}.npy'.format(SYM)))
     return X_train, X_test, y_train, y_test
 
-X_train, X_test, y_train, y_test = load_preprocessed_data(data_dir, SYM, Tx, Ty, MAX_LAG)
+X_train, X_test, y_train, y_test = load_preprocessed_data(data_dir, SYM)
 
-N_FEATURES = int(X_train.columns.values.size/Tx)
+N_FEATURES = X_train.shape[2]
+p('Original shape:', X_train.shape)
+X_train = X_train.reshape((-1, Tx*N_FEATURES))
+X_test = X_test.reshape((-1, Tx*N_FEATURES))
+p('2d shape:', X_train.shape)
+p(X_train[1])
 
 
 # ### XGBRegressor Definition
@@ -64,8 +69,8 @@ parameters = {
   'max_depth': 10,
   'min_child_weight': 4,
   'silent': 1,
-  'subsample': 0.7,
-  'colsample_bytree': 0.7,
+  'subsample': .7,
+  'colsample_bytree': .7,
   'n_estimators': 400,
   'early_stopping_rounds': 50,
 }
@@ -107,10 +112,15 @@ xgb_grid.fit(X_train, y_train)
 
 xgb_predict = xgb_grid.predict(X_test)
 
-p('MAE: ', mean_absolute_error(xgb_predict, y_test))
-p('MSE: ', mean_squared_error(xgb_predict, y_test))
+test_mae = mean_absolute_error(xgb_predict, y_test)
+test_mse = mean_squared_error(xgb_predict, y_test)
+p('Test Set Results')
+p('MAE:', test_mae)
+p('MSE:', test_mse)
 p('Best parameters: ', xgb_grid.best_params_)
 
+
+# ### Feature Importance (F-score)
 
 # In[8]:
 
@@ -120,7 +130,10 @@ plot_importance(ax=ax, booster=xgb_grid.best_estimator_, max_num_features=24)
 plt.show()
 
 
-# ### Re-Train Model with Best Parameters to Evaluate Learning Curve
+# ### Evaluate Learning Curve
+# - Re-Train the model with best parameters
+# - Check model performance every n training examples
+# - Plot!
 
 # In[9]:
 
@@ -131,9 +144,20 @@ Define the Model.
 xgb_lc = XGBRegressor(**parameters).set_params(**xgb_grid.best_params_)
 
 """
-Calculate Learning Curve.
+Calculate learning curve ()
 """
-def calc_xgboost_learning_curve(model, step, X_train, X_test, y_train, y_test):
+def calc_xgboost_learning_curve(model, step, X_train, X_test, y_train, y_test) -> tuple:
+    """Calculate XGBoostRegressor Learning Curve
+    Calculates the mean absolute error for a XGBRegressor 
+    per number of training examples fed into the model
+    
+    Returns:: 
+        iterations = number of training examples used to 
+            train the model(x-axis of learning curve plot)
+        scores_train = mean absolute error of training data
+        scores_cv = mean absolute error of cross-validation 
+            (test) data
+    """
     scorestrain=[]
     scorescv=[]
     iterations=[]
@@ -161,15 +185,15 @@ iterations, scorestrain, scorescv = calc_xgboost_learning_curve(xgb_lc, 500, X_t
 """
 Plot learning curve.
 """
-def plot_xgboost_learning_curve(iterations, scorestrain, scorescv):
-    plt.figure(figsize=(12,8))
+def plot_xgboost_learning_curve(iterations, scorestrain, scorescv) -> None:
+    """Plots output of `calc_xgboost_learning_curve`"""
+    plt.figure(figsize=(12, 7))
     plt.plot(iterations,scorestrain, 'r')
     plt.plot(iterations,scorescv, 'b')
     plt.xlabel('# training examples')
     plt.ylabel('MAE')
     plt.legend(['Training Set', 'CV set'], loc='lower right')
     plt.show()
-    return None
 
 plot_xgboost_learning_curve(iterations, scorestrain, scorescv)
 
@@ -178,8 +202,8 @@ plot_xgboost_learning_curve(iterations, scorestrain, scorescv)
 
 
 # Save model
-models_dir = os.path.join(get_project_path(), 'models')
-model_filename = 'xgboost_{}_tx{}_ty{}_flag{}.pkl'.format(SYM, Tx, Ty, MAX_LAG)
-with open(os.path.join(models_dir, model_filename), 'wb') as output_file:
+model_filename = 'tree_model_dev_{}.pkl'.format(SYM)
+model_path = join(get_project_path(), 'models', model_filename)
+with open(model_path, 'wb') as output_file:
     s = pickle.dump(xgb_grid.best_estimator_, output_file)
 

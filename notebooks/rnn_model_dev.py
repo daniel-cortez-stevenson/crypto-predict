@@ -15,27 +15,30 @@ get_ipython().run_line_magic('load_ext', 'autoreload')
 get_ipython().run_line_magic('autoreload', '2')
 p = print
 
+from os.path import join
+import pickle
+
 import pandas as pd
 import numpy as np
-
 import matplotlib.pyplot as plt
 import seaborn as sns
 get_ipython().run_line_magic('matplotlib', 'inline')
-
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.preprocessing import StandardScaler
 
-import os
-import pickle
+from keras.layers import Input, LSTM, BatchNormalization, Dense
+from keras import Model
+from keras.initializers import RandomNormal, Ones, Constant
+from keras.optimizers import Adam
 
 from crypr.util import get_project_path
 
 coin = 'BTC'
-data_path = os.path.join(get_project_path(), 'data', 'processed')
+data_path = join(get_project_path(), 'data', 'processed')
 
 
-# In[4]:
+# In[2]:
 
 
 """
@@ -45,15 +48,15 @@ Ty = 1
 Tx = 72
 feature_lag = 72
 
-X_train = pd.read_csv(os.path.join(data_path, 'X_train_{}_tx{}_ty{}_flag{}.csv'.format(coin, Tx, Ty, feature_lag)))
-Y_train = pd.read_csv(os.path.join(data_path, 'Y_train_{}_tx{}_ty{}_flag{}.csv'.format(coin, Tx, Ty, feature_lag)))
-X_test = pd.read_csv(os.path.join(data_path, 'X_test_{}_tx{}_ty{}_flag{}.csv'.format(coin, Tx, Ty, feature_lag)))
-Y_test = pd.read_csv(os.path.join(data_path, 'Y_test_{}_tx{}_ty{}_flag{}.csv'.format(coin, Tx, Ty, feature_lag)))
+X_train = np.load(join(data_path, 'X_train_{}.npy'.format(coin)))
+Y_train = np.load(join(data_path, 'Y_train_{}.npy'.format(coin)))
+X_test = np.load(join(data_path, 'X_test_{}.npy'.format(coin)))
+Y_test = np.load(join(data_path, 'Y_test_{}.npy'.format(coin)))
 
-N_FEATURES = int(X_train.columns.values.size / Tx)
+N_FEATURES = X_train.shape[2]
 
 
-# In[5]:
+# In[3]:
 
 
 """
@@ -84,46 +87,28 @@ for strategy in ['mean', 'median', 'constant']:
     print('{} MSE: {}'.format(strategy, mean_squared_error(y_true=Y_test, y_pred=dummy_predict_test)))
 
 
-# In[7]:
+# In[4]:
 
 
 """
-Reshape the model into a 3D array to fit the RNN Model.
+Scale each channels' data.
+(source: Top answer from https://stackoverflow.com/questions/50125844/how-to-standard-scale-a-3d-matrix)
 """
-def shape_model_data(X, n_timesteps, n_features):
-    return X.reshape((X.shape[0], n_timesteps, n_features))
+scalers = {}
+for i in range(X_train.shape[2]):
+    scalers[i] = StandardScaler()
+    X_train[:, i, :] = scalers[i].fit_transform(X_train[:, i, :]) 
+
+for i in range(X_test.shape[2]):
+    X_test[:, i, :] = scalers[i].transform(X_test[:, i, :]) 
 
 
-# In[8]:
-
-
-"""
-Define preprocessing steps.
-"""
-pipeline = Pipeline([
-    ('scaler', StandardScaler()),
-    ('reshape', FunctionTransformer(shape_model_data, kw_args=dict(n_timesteps=Tx, n_features=N_FEATURES)))
-])
-
-
-# In[10]:
+# In[5]:
 
 
 """
-Transform the feature data.
+Define RNN Model.
 """
-model_X_train = pipeline.fit_transform(X_train)
-model_X_test = pipeline.fit_transform(X_test)
-
-
-# In[11]:
-
-
-from keras.layers import Input, LSTM, BatchNormalization, Dense
-from keras import Model
-
-from keras.initializers import RandomNormal, Ones, Constant
-
 def lstm_model(input_shape, num_outputs, kernel_init='normal', bias_init='zeros'): 
     model_input = Input(shape=input_shape, dtype='float32')
 
@@ -138,23 +123,22 @@ def lstm_model(input_shape, num_outputs, kernel_init='normal', bias_init='zeros'
     return Model(inputs=model_input, outputs=X)
 
 
-# In[13]:
+# In[6]:
 
 
-model = lstm_model(model_X_train.shape[1:], Ty)
+model = lstm_model(X_train.shape[1:], num_outputs=Ty)
 model.summary()
 
 
-# In[14]:
+# In[7]:
 
 
-from keras.optimizers import Adam
 """
 Set model training parameters.
 """
 epochs = 5
 batch_size = 32
-learning_rate=.001
+learning_rate = 1e-3
 decay_rate = learning_rate / epochs
 
 """
@@ -162,15 +146,17 @@ Compile and fit model.
 """
 model.compile(loss='mse', optimizer=Adam(lr=learning_rate, decay=decay_rate), metrics=['mae'])
 
-fit = model.fit(model_X_train, Y_train,
-                shuffle=False,
-                epochs=epochs, 
-                batch_size=batch_size, 
-                validation_data=(model_X_test, Y_test)
-               )
+fit = model.fit(
+    X_train, 
+    Y_train,
+    shuffle=True,
+    epochs=epochs, 
+    batch_size=batch_size, 
+    validation_data=(X_test, Y_test),
+)
 
 
-# In[15]:
+# In[8]:
 
 
 """
@@ -181,7 +167,7 @@ plt.plot(fit.history['val_loss'], label='dev')
 plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
-plt.ylim([0,None])
+plt.ylim([0, None])
 plt.legend()
 plt.show()
 
@@ -193,34 +179,36 @@ plt.plot(fit.history['val_mean_absolute_error'], label='dev')
 plt.title('model mean absolute error')
 plt.ylabel('mean absolute error')
 plt.xlabel('epoch')
-plt.ylim([0,None])
+plt.ylim([0, None])
 plt.legend()
 plt.show()
 
 
-# In[16]:
+# In[9]:
 
 
-backtest=model.predict(model_X_train)
-prediction = model.predict(model_X_test)
+backtest = model.predict(X_train)
+prediction = model.predict(X_test)
 
 
-# In[17]:
+# In[10]:
 
 
-fig,ax=plt.subplots(figsize=(12,7))
-plt.plot(Y_test.values, c=sns.color_palette('rocket')[0], label='actual')
+fig, ax = plt.subplots(figsize=(12,7))
+plt.plot(Y_test, c=sns.color_palette('rocket')[0], label='actual')
 plt.plot(prediction, c=sns.color_palette('rocket')[5], label='prediction')
 plt.title('prediction vs. actual on unseen (future) data')
 plt.legend()
+plt.show()
 
 
-# In[18]:
+# In[11]:
 
 
-fig,ax=plt.subplots(figsize=(12,7))
-plt.plot(Y_train.values, c=sns.color_palette('rocket')[0], label='actual')
+fig, ax = plt.subplots(figsize=(12,7))
+plt.plot(Y_train, c=sns.color_palette('rocket')[0], label='actual')
 plt.plot(backtest, c=sns.color_palette('rocket')[5], label='prediction')
 plt.title('prediction vs. actual on training data')
 plt.legend()
+plt.show()
 

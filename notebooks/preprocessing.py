@@ -102,7 +102,8 @@ p('Total Features per Sample:', pc['tx']*num_features)
 # In[8]:
 
 
-X, y = data_to_supervised(input_df=arr, target_ix=-1, Tx=pc['tx'], Ty=pc['ty'])
+X, y = data_to_supervised(input_df=pd.DataFrame(data=arr, columns=ct.get_feature_names()), 
+                                                target_ix=-1, Tx=pc['tx'], Ty=pc['ty'])
 p(X.head(2))
 p(y.head(5))
 

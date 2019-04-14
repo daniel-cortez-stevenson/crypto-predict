@@ -35,6 +35,7 @@ setup(
     tests_require=[
         'pytest>=4.0.2',
         'coverage>=4.5.2',
+        'nbval>=0.9',
     ],
     entry_points = {
         'console_scripts': [

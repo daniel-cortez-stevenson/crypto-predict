@@ -14,14 +14,17 @@ from os.path import join
 
 import pandas as pd
 import numpy as np
-
+import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'inline')
+from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
 
 from scipy import signal
 import pywt
 
 from crypr.util import get_project_path
-from crypr.build import make_features, data_to_supervised
+from crypr.build import make_features, data_to_supervised, make_3d
+from crypr.transformers import PassthroughTransformer, HaarSmoothTransformer
 
 
 # In[2]:
@@ -35,106 +38,76 @@ TEST_SIZE = 0.05
 
 data_path = join(get_project_path(), 'data', 'raw', SYM + '.csv')
 data = pd.read_csv(data_path, index_col=0)
-data.head()
+
+"""
+Train Test Split.
+"""
+data_train, data_test = train_test_split(data, test_size=TEST_SIZE, shuffle=False)
+data_train = data_train.dropna()
+data_test = data_test.dropna().iloc[:-1]
+
+p(data_train.shape, data_test.shape)
+data_test.head()
 
 
 # In[3]:
 
 
 """
-Get percent change feature and target data.
+Get features.
 """
-df = make_features(input_df=data, target_col='close')
-X, y = data_to_supervised(input_df=df, target_ix=-1, Tx=Tx, Ty=Ty)
-p(X.shape, y.shape)
-X.head()
+feature_data_train = make_features(input_df=data_train, target_col='close', ma_cols=['volumeto', 'volumefrom'], ma_lags=[3, 6, 12])
+feature_data_test = make_features(input_df=data_test, target_col='close', ma_cols=['volumeto', 'volumefrom'], ma_lags=[3, 6, 12])
+
+feature_data_train.dropna(inplace=True)
+feature_data_test.dropna(inplace=True)
+
+feature_data_test.head()
 
 
 # In[4]:
 
 
 """
-Confirm data reshape and target/feature creation was done correctly.
+Apply DWT Smooth.
 """
-y_values_except_last = np.squeeze(y.iloc[:-1].values)
-t_minus_1_x_values_except_first = X.iloc[1:,-1].values
+transformers = [
+    ('haar_smooth', HaarSmoothTransformer(.05), list(feature_data_train.columns)),
+    ('orig', PassthroughTransformer(), ['target__close']),
+]
 
-y_values_except_last.all() == t_minus_1_x_values_except_first.all()
+ct = ColumnTransformer(transformers=transformers, n_jobs=-1)
+
+smooth_arr_train = ct.fit_transform(feature_data_train)
+smooth_data_train = pd.DataFrame(smooth_arr_train, columns=ct.get_feature_names())
+
+smooth_arr_test = ct.fit_transform(feature_data_test)
+smooth_data_test = pd.DataFrame(smooth_arr_test, columns=ct.get_feature_names())
+
+smooth_data_train.plot(); plt.show()
 
 
 # In[5]:
 
 
 """
-For comparing different transformations
+Make time-series data.
 """
-sample_ix = 1000
+X_train, y_train = data_to_supervised(input_df=smooth_data_train, target_ix=-1, Tx=Tx, Ty=Ty)
+X_test, y_test = data_to_supervised(input_df=smooth_data_test, target_ix=-1, Tx=Tx, Ty=Ty)
+p(X_train.head())
+p(y_train.head())
+
+"""
+Reshape the data into 3d array.
+"""
+X_train = make_3d(X_train, tx=Tx, num_channels=len(list(feature_data_train.columns)) + 1)
+X_test = make_3d(X_test, tx=Tx, num_channels=len(list(feature_data_test.columns)) + 1)
+
+X_train.view()
 
 
 # In[6]:
-
-
-"""
-Reshape the data into 3d array if multiple variables.
-"""
-X = X.values.reshape((X.shape[0], -1, Tx))
-p(X.shape)
-
-
-# In[7]:
-
-
-"""
-Apply the wave transformation to the feature data.
-"""
-wt_type = 'DWT_HAAR'
-p('Applying {} transform ...'.format(wt_type))
-
-if wt_type == 'RICKER':
-    wt_transform_fun = lambda x: signal.cwt(x, wavelet=signal.ricker, widths=widths)
-elif wt_type == 'HAAR':
-    wt_transform_fun = lambda x: Haar(x).getpower()
-elif wt_type == 'DWT_HAAR':
-    wt_transform_fun = lambda x: np.stack(pywt.dwt(x, 'haar'))
-else:
-    raise NotImplementedError
-    
-X_wt = np.apply_along_axis(func1d=wt_transform_fun, axis=-1, arr=X)
-
-X_wt.shape
-
-
-# In[8]:
-
-
-"""
-Condense wavelet features if multiple features analyzed.
-"""
-X_wt = X_wt.reshape((X_wt.shape[0], X_wt.shape[1]*X_wt.shape[2], X_wt.shape[-1]))
-N = X_wt.shape[-2:]
-X_wt.shape, N
-
-
-# In[9]:
-
-
-"""
-Reshape the data so Tx is the 2nd dimension.
-"""
-X_wt_rs = X_wt.swapaxes(-1,-2)
-p(X_wt_rs.shape)
-
-
-# In[10]:
-
-
-"""
-Train Test Split.
-"""
-X_train, X_test, y_train, y_test = train_test_split(X_wt_rs, y, test_size=TEST_SIZE, shuffle=False)
-
-
-# In[11]:
 
 
 """
@@ -142,12 +115,8 @@ Save data.
 """
 output_dir = join(get_project_path(), 'data', 'processed')
 
-np.save(arr=X_train, allow_pickle=True, 
-        file=join(output_dir, '.X_train_{}_{}_{}x{}'.format(SYM, wt_type, Tx, N)))
-np.save(arr=X_test, allow_pickle=True, 
-        file=join(output_dir, 'X_test_{}_{}_{}x{}'.format(SYM, wt_type, Tx, N)))
-np.save(arr=y_train, allow_pickle=True, 
-        file=join(output_dir, 'y_train_{}_{}_{}x{}'.format(SYM, wt_type, Tx, N)))
-np.save(arr=y_test, allow_pickle=True, 
-        file=join(output_dir, 'y_test_{}_{}_{}x{}'.format(SYM, wt_type, Tx, N)))
+np.save(arr=X_train, file=join(output_dir, 'X_train_multiple_smooth_{}'.format(SYM)))
+np.save(arr=X_test, file=join(output_dir, 'X_test_multiple_smooth_{}'.format(SYM)))
+np.save(arr=y_train, file=join(output_dir, 'y_train_multiple_smooth_{}'.format(SYM)))
+np.save(arr=y_test, file=join(output_dir, 'y_test_multiple_smooth_{}'.format(SYM)))
 

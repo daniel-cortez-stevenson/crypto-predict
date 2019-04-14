@@ -8,7 +8,7 @@ get_ipython().run_line_magic('load_ext', 'autoreload')
 get_ipython().run_line_magic('autoreload', '2')
 p = print
 
-import os
+from os.path import join
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -21,7 +21,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 from keras.optimizers import Adam
 from keras.callbacks import TensorBoard
 
-from crypr.zoo import LSTM_triggerNG, LSTM_WSAEs
+from crypr.zoo import LSTM_triggerNG
 from crypr.util import get_project_path
 
 
@@ -33,16 +33,16 @@ Tx = 72
 Ty = 1
 wavelet = 'MORLET'
 N = 28
-data_dir = os.path.join(get_project_path(), 'data', 'processed')
+data_dir = join(get_project_path(), 'data', 'processed')
 
 """
 Import Data.
 """
 def load_preprocessed_data(from_dir, sym, tx, wavelet, n=None):
-    X_train = np.load(os.path.join(data_dir, 'X_train_{}_{}_{}x{}.npy'.format(sym, wavelet, n, tx)))
-    X_test = np.load(os.path.join(data_dir, 'X_test_{}_{}_{}x{}.npy'.format(sym, wavelet, n, tx)))
-    y_train = np.load(os.path.join(data_dir, 'y_train_{}_{}_{}x{}.npy'.format(sym, wavelet, n, tx)))
-    y_test = np.load(os.path.join(data_dir, 'y_test_{}_{}_{}x{}.npy'.format(sym, wavelet, n, tx)))
+    X_train = np.load(join(data_dir, 'X_train_{}_{}_{}x{}.npy'.format(sym, wavelet, n, tx)))
+    X_test = np.load(join(data_dir, 'X_test_{}_{}_{}x{}.npy'.format(sym, wavelet, n, tx)))
+    y_train = np.load(join(data_dir, 'y_train_{}_{}_{}x{}.npy'.format(sym, wavelet, n, tx)))
+    y_test = np.load(join(data_dir, 'y_test_{}_{}_{}x{}.npy'.format(sym, wavelet, n, tx)))
     return X_train, X_test, y_train, y_test
 
 X_train, X_test, y_train, y_test = load_preprocessed_data(data_dir, SYM, Tx, wavelet, N)
@@ -80,15 +80,9 @@ for strategy in ['mean', 'median', 'constant']:
 # In[4]:
 
 
-model_type = 'LSTM_WSAEs'
-
-if model_type == 'LSTM_triggerNG':
-    model = LSTM_triggerNG(X_train.shape[1:], )
-elif model_type == 'LSTM_WSAEs':
-    model = LSTM_WSAEs(Tx, N, Ty)
-else:
-    raise NotImplementedError
-
+tx, num_channels = X_train.shape[1:]
+ty = y_train.shape[1]
+model = LSTM_triggerNG(tx=tx, num_channels=num_channels, num_outputs=ty)
 model.summary()
 
 
@@ -110,7 +104,8 @@ decay = 0.01  # TODO: calculated decay rate -- decay = learning_rate / epochs
 """
 Logging params.
 """
-tensorboard = TensorBoard(log_dir='logs/{}'.format(model_type), histogram_freq=0, batch_size=batch_size, 
+log_dir = join(get_project_path(), 'notebooks', 'logs', 'cwt_rnn_model_dev')
+tensorboard = TensorBoard(log_dir=log_dir, histogram_freq=0, batch_size=batch_size, 
                           write_graph=True, write_grads=False, write_images=False)
 
 """
@@ -122,11 +117,11 @@ opt = Adam(lr=learning_rate, beta_1=beta_1, beta_2=beta_2, decay=decay)
 model.compile(loss='mae', optimizer=opt)
 
 fit = model.fit(X_train, 
-                [X_train, y_train],
+                y_train,
                 shuffle=False,
                 epochs=epochs, 
                 batch_size=batch_size, 
-                validation_data=(X_test, [X_test, y_test]),
+                validation_data=(X_test, y_test),
                 callbacks=[tensorboard],
                )
 
@@ -187,10 +182,10 @@ plt.legend()
 plt.show()
 
 
-# In[11]:
+# In[10]:
 
 
 # Save the model
-models_dir = os.path.join(get_project_path(), 'models')
-model.save(filepath=os.path.join(models_dir, '{}_cwt_{}x{}_{}_{}.h5'.format(model_type, N, Tx, wavelet, SYM)))
+model_path = join(get_project_path(), 'models', 'cwt_rnn_model_dev_{}.h5'.format(SYM))
+model.save(filepath=model_path)
 

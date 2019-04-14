@@ -11,23 +11,17 @@ get_ipython().run_line_magic('autoreload', '2')
 p = print
 
 from os.path import join
-import gc
-import pickle
 
 import pandas as pd
 import numpy as np
-
 import matplotlib.pyplot as plt
-import seaborn as sns
 get_ipython().run_line_magic('matplotlib', 'inline')
-
+from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
-from scipy.fftpack import fft, fftfreq, fftshift
-from scipy import signal
-import pywt
 
 from crypr.util import get_project_path
-from crypr.build import make_features, data_to_supervised, dwt_smoother
+from crypr.build import data_to_supervised, make_3d
+from crypr.transformers import HaarSmoothTransformer, PassthroughTransformer, PercentChangeTransformer
 
 
 # In[2]:
@@ -44,89 +38,85 @@ data_path = join(get_project_path(), 'data', 'raw', SYM + '.csv')
 # In[3]:
 
 
-data = pd.read_csv(data_path, index_col=0)
-data.head()
+raw_data = pd.read_csv(data_path, index_col=0)[['close']]
+
+train_data, test_data = train_test_split(raw_data, test_size=TEST_SIZE, shuffle=False)
+train_data.head()
 
 
-# In[5]:
+# In[4]:
 
 
 """
 Get percent change feature and target data.
 """
-df = make_features(input_df=data, target_col='close')
-X, y = data_to_supervised(input_df=df[['target__close']], target_ix=-1, Tx=Tx, Ty=Ty)
-p(X.shape, y.shape)
-X.head()
+def apply_pct_change(data):
+    arr = PercentChangeTransformer().fit_transform(data)
+    return pd.DataFrame(arr, columns=['pct_change__close']).dropna()
+
+train_data = apply_pct_change(train_data)
+test_data = apply_pct_change(test_data).iloc[:-1]
+p(train_data.shape, test_data.shape)
+train_data.head()
+
+
+# In[5]:
+
+
+def apply_haar_smooth(data):
+    transformers = [
+        ('orig', PassthroughTransformer(), ['pct_change__close']),
+        ('haar_smooth', HaarSmoothTransformer(.4), ['pct_change__close']),
+    ]
+    ct = ColumnTransformer(transformers=transformers, remainder='drop', n_jobs=-1)
+    return pd.DataFrame(data=ct.fit_transform(data), columns=ct.get_feature_names())
+
+train_smooth = apply_haar_smooth(train_data)
+test_smooth = apply_haar_smooth(test_data)
+
+train_smooth.head()
 
 
 # In[6]:
 
 
 """
-Confirm data reshape and target/feature creation was done correctly.
+Visualize
 """
-y_values_except_last = np.squeeze(y.iloc[:-1].values)
-t_minus_1_x_values_except_first = X.iloc[1:,-1].values
+sample_ix = 100
+sample_n = 100
+sample = train_smooth.iloc[sample_ix:sample_ix + sample_n]
 
-y_values_except_last.all() == t_minus_1_x_values_except_first.all()
+fig, ax = plt.subplots(figsize=(12, 7))
+plt.plot(sample['orig__pct_change__close'], label='raw')
+plt.plot(sample['haar_smooth__pct_change__close'], label='smoothed')
+plt.title('DWT Haar Smoothing')
+plt.legend()
+plt.show()
 
 
 # In[7]:
 
 
 """
-For comparing different transformations
+Create time-series samples.
 """
-sample_ix = 1000
-sample = X.iloc[sample_ix].values
+X_train, y_train = data_to_supervised(train_smooth, target_ix=-1, Tx=Tx, Ty=Ty)
+X_test, y_test = data_to_supervised(test_smooth, target_ix=-1, Tx=Tx, Ty=Ty)
+X_train = make_3d(X_train, tx=Tx, num_channels=2)
+X_test = make_3d(X_test, tx=Tx, num_channels=2)
 
 
 # In[8]:
 
 
 """
-DWT Haar Transform
+Save data.
 """
-smoothed_sample = dwt_smoother(sample, 'haar', smooth_factor=.4)
-plt.plot(sample, label='raw')
-plt.plot(smoothed_sample, label='smoothed')
-plt.title('DWT Haar Smoothing')
-plt.legend()
-plt.show()
+output_dir = join(get_project_path(), 'data', 'processed')
 
-
-# In[9]:
-
-
-"""
-Apply the wavelet transformation smoothing to the feature data.
-"""
-wt_type = 'haar'
-smoothing = .4
-X_smooth = np.apply_along_axis(func1d=lambda x: dwt_smoother(x, wt_type, smooth_factor=smoothing), 
-                               axis=-1, arr=X)
-
-assert X_smooth.shape == X.shape
-
-
-# In[10]:
-
-
-"""
-Train Test Split.
-"""
-X_train, X_test, y_train, y_test = train_test_split(X_smooth, y, test_size=TEST_SIZE, shuffle=False)
-
-
-# In[11]:
-
-
-# """
-# Save data.
-# """
-# np.save(arr=X_train, file='../data/processed/X_train_{}_{}_smooth_{}'.format(SYM, wt_type, Tx))
-# np.save(arr=X_test,  file='../data/processed/X_test_{}_{}_smooth_{}'.format(SYM, wt_type, Tx))
-# np.save(arr=y_train, file='../data/processed/y_train_{}_{}_smooth_{}'.format(SYM, wt_type, Tx))
-# np.save(arr=y_test,  file='../data/processed/y_test_{}_{}_smooth_{}'.format(SYM, wt_type, Tx))
+np.save(arr=X_train, file=join(output_dir, 'X_train_smooth_{}.npy'.format(SYM)))
+np.save(arr=X_test,  file=join(output_dir, 'X_test_smooth_{}.npy'.format(SYM)))
+np.save(arr=y_train, file=join(output_dir, 'y_train_smooth_{}.npy'.format(SYM)))
+np.save(arr=y_test,  file=join(output_dir, 'y_test_smooth_{}.npy'.format(SYM)))
 

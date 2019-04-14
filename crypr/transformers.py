@@ -58,21 +58,22 @@ class PercentChangeTransformer(BaseTransformer):
 
 
 class HaarSmoothTransformer(BaseTransformer):
-    def __init__(self, smooth_factor):
+    def __init__(self, smooth_factor, wavelet='haar'):
         self.smooth_factor = smooth_factor
+        self.wavelet = wavelet
         BaseTransformer.__init__(self)
 
     def transform(self, X):
-        return np.apply_along_axis(func1d=lambda x: self.discrete_wavelet_transform(x),
-                                   axis=-1, arr=X.values)
+        return np.apply_along_axis(func1d=lambda x: self.discrete_wavelet_transform(x), axis=0, arr=X)
 
-    def discrete_wavelet_transform(self, x) -> np.ndarray:
-        cA, cD = pywt.dwt(x, 'haar')
-        cAt = pywt.threshold(cA, self.smoothing_threshold(cA, self.smooth_factor), mode='soft')
-        cDt = pywt.threshold(cD, self.smoothing_threshold(cD, self.smooth_factor), mode='soft')
-        tx = pywt.idwt(cAt, cDt, 'haar')
+    def discrete_wavelet_transform(self, arr1d: np.ndarray) -> np.ndarray:
+        cA, cD = pywt.dwt(arr1d, self.wavelet, mode='symmetric', axis=-1)
+        cAt, cDt = self.threshold(cA), self.threshold(cD)
+        tx = pywt.idwt(cAt, cDt, self.wavelet, mode='symmetric', axis=-1)
         return tx
 
-    @staticmethod
-    def smoothing_threshold(x, factor: float = 1.) -> float:
-        return np.std(x) * np.sqrt(factor * np.log(x.size))
+    def threshold(self, arr1d: np.ndarray) -> np.ndarray:
+        return pywt.threshold(arr1d, value=self.smoothing_threshold(arr1d), mode='soft')
+
+    def smoothing_threshold(self, x) -> float:
+        return np.std(x) * np.sqrt(self.smooth_factor * np.log(x.size))
