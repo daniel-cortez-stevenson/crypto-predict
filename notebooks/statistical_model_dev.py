@@ -1,25 +1,25 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Statistical Forecasting of Closing Price
+# # Statistical Forecasting of Close Value, Returns, and Volatility
 # - Work in Progress
-# - AR/ARMA/ARIMA modelling
-# - Based off of several good online articles
+# - AR/ARMA/ARIMA/GARCH modelling
 
-# In[32]:
+# In[1]:
 
 
 get_ipython().run_line_magic('load_ext', 'autoreload')
 get_ipython().run_line_magic('autoreload', '2')
 p = print
 
-import os
-import datetime
+from os.path import join
+from datetime import datetime
 
 import pandas as pd
 import numpy as np
 
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 from sklearn.preprocessing import MinMaxScaler
@@ -31,106 +31,115 @@ import statsmodels
 import statsmodels.formula.api as smf
 import statsmodels.tsa.api as smt
 import statsmodels.api as sm
+
 import scipy.stats as scs
 
 import arch
+from arch.univariate import ARX, GARCH
+from arch.univariate import StudentsT
 
 
-# In[98]:
+# In[2]:
+
+
+"""
+Set plotting style.
+"""
+plt.style.use('bmh')
+
+
+# In[3]:
 
 
 """
 Import Data.
 """
 SYM = 'BTC'
-data_path = os.path.join(get_project_path(), 'data', 'raw', SYM + '.csv')
-data = pd.read_csv(os.path.join(data_path), index_col=-1)
+data_path = join(get_project_path(), 'data', 'raw', SYM + '.csv')
+data = pd.read_csv(join(data_path), usecols=['close', 'time'], index_col='time')
 data.head()
 
 
-# In[99]:
+# In[4]:
 
 
-# # log returns
-# lrets = np.log(df.close/df.close.shift(1)).dropna()
-# lrets.plot()
-# plt.show()
-
-# percent change
-pchange = data['close'].pct_change()
-pchange.plot()
-plt.show()
+"""
+Calculate signals.
+"""
+data['log_returns'] = np.log(data.close / data.close.shift(1))
+data['percent_change'] = data.close.pct_change()
+data.head()
 
 
-# In[195]:
+# In[5]:
 
 
-Y = data['close'].pct_change().dropna()
-Y.index = list(map(lambda ix: datetime.datetime.strptime(ix, '%Y-%m-%d %H:%M:%S').timestamp(), Y.index))
+"""
+Set analysis vars.
+"""
+Y = data['log_returns'].dropna()
+Y.index = pd.DatetimeIndex(pd.date_range(Y.index[0]*1000000000, freq='H', periods=len(Y.index)))
+
 max_lag = 30
 freq = 'H'
 forecast_steps = 21
+forecast_idx = pd.date_range(Y.index[-1], periods=forecast_steps, freq=freq)
+
 Y.head()
 
 
-# In[196]:
+# In[6]:
 
 
-def tsplot(y, lags=None, figsize=(10, 8), style='bmh'):
-    if not isinstance(y, pd.Series):
-        y = pd.Series(y)
-    with plt.style.context(style):    
-        fig = plt.figure(figsize=figsize)
-        #mpl.rcParams['font.family'] = 'Ubuntu Mono'
-        layout = (3, 2)
-        ts_ax = plt.subplot2grid(layout, (0, 0), colspan=2)
-        acf_ax = plt.subplot2grid(layout, (1, 0))
-        pacf_ax = plt.subplot2grid(layout, (1, 1))
-        qq_ax = plt.subplot2grid(layout, (2, 0))
-        pp_ax = plt.subplot2grid(layout, (2, 1))
-        
-        y.plot(ax=ts_ax)
-        ts_ax.set_title('Time Series Analysis Plots')
-        smt.graphics.plot_acf(y, lags=lags, ax=acf_ax, alpha=0.5)
-        smt.graphics.plot_pacf(y, lags=lags, ax=pacf_ax, alpha=0.5)
-        sm.qqplot(y, line='s', ax=qq_ax)
-        qq_ax.set_title('QQ Plot')        
-        scs.probplot(y, sparams=(y.mean(), y.std()), plot=pp_ax)
+def tsplot(y, lags=None, figsize=(10, 8), style='bmh') -> None: 
+    fig = plt.figure(figsize=figsize)
+    layout = (3, 2)
 
-        plt.tight_layout()
-    return 
+    ts_ax = plt.subplot2grid(layout, (0, 0), colspan=2)
+    ts_ax.set_title('Time Series Analysis Plots')
+    y.plot(ax=ts_ax)
 
+    acf_ax = plt.subplot2grid(layout, (1, 0))
+    smt.graphics.plot_acf(y, lags=lags, ax=acf_ax, alpha=0.5)
 
-# In[197]:
+    pacf_ax = plt.subplot2grid(layout, (1, 1))
+    smt.graphics.plot_pacf(y, lags=lags, ax=pacf_ax, alpha=0.5)
+
+    qq_ax = plt.subplot2grid(layout, (2, 0))
+    qq_ax.set_title('QQ Plot') 
+    sm.qqplot(y, line='s', ax=qq_ax)
+
+    pp_ax = plt.subplot2grid(layout, (2, 1))
+    scs.probplot(y, sparams=(y.mean(), y.std()), plot=pp_ax)
+
+    plt.tight_layout()
+
+tsplot(Y, lags=max_lag)
 
 
-_ = tsplot(Y, lags=max_lag)
+# In[7]:
 
 
-# In[272]:
+# Select best lag order for crypto returns using Autoregressive (AR) Model
+ar_lag_order_estimate = smt.AR(Y, freq=freq).select_order(maxlag=max_lag, ic='aic', trend='nc')
+p('best estimated lag order =', ar_lag_order_estimate)
 
 
-# Select best lag order for BTC returns using Autoregressive Model
-ar_est_order = smt.AR(Y).select_order(maxlag=max_lag, ic='aic', trend='nc')
-p('best estimated lag order = {}'.format(ar_est_order))
+# In[8]:
 
 
-# In[158]:
-
-
-# Fit MA(3) to BTC returns
-arma_mdl = smt.ARMA(Y, order=(0, 3)).fit(maxlag=max_lag, method='mle', trend='nc', freq=freq)
-p(arma_mdl.summary())
+# Fit MA(3) to crypto returns
+arma_mdl = smt.ARMA(Y, order=(0, 3), freq=freq).fit(maxlag=max_lag, method='mle', trend='nc')
+arma_mdl.summary()
 
 
 # # ARMA
 
-# In[199]:
+# In[9]:
 
 
-# Fit ARMA model to BTC returns
 def _get_best_arma(TS):
-    best_aic = np.inf 
+    best_aic = float('inf')
     best_order = None
     best_mdl = None
 
@@ -144,7 +153,7 @@ def _get_best_arma(TS):
                     best_order = (i, j)
                     best_mdl = tmp_mdl
             except: continue
-    p('aic: {:6.5f} | order: {}'.format(best_aic, best_order))
+    p('ARMA Results:', 'best aic = {:6.5f} | best order = {}'.format(best_aic, best_order))
     return best_aic, best_order, best_mdl
 
 arma_aic, arma_order, arma_mdl = _get_best_arma(Y)
@@ -152,11 +161,11 @@ arma_aic, arma_order, arma_mdl = _get_best_arma(Y)
 
 # # ARIMA
 
-# In[200]:
+# In[10]:
 
 
 def _get_best_arima(TS):
-    best_aic = np.inf 
+    best_aic = float('inf')
     best_order = None
     best_mdl = None
 
@@ -173,11 +182,11 @@ def _get_best_arima(TS):
                         best_order = (i, d, j)
                         best_mdl = tmp_mdl
                 except: continue
-    p('aic: {:6.5f} | order: {}'.format(best_aic, best_order))                    
+    p('ARIMA Results: best aic = {:6.5f} | best order = {}'.format(best_aic, best_order))                    
     return best_aic, best_order, best_mdl
 
 
-# In[201]:
+# In[11]:
 
 
 arima_aic, arima_order, arima_mdl = _get_best_arima(Y)
@@ -185,180 +194,155 @@ arima_aic, arima_order, arima_mdl = _get_best_arima(Y)
 
 # # Predict Volatility with ARIMA
 
-# In[202]:
+# In[12]:
 
 
-# Create a XXX hour forecast of BTC returns with 95%, 99% CI
+# Create an hourly forecast of crypto returns with 95%, 99% CI
 f, err95, ci95 = arima_mdl.forecast(steps=forecast_steps) # 95% CI
 _, err99, ci99 = arima_mdl.forecast(steps=forecast_steps, alpha=0.01) # 99% CI
 
-idx = pd.date_range(Y.index[-1], periods=forecast_steps, freq=freq)
 fc_95 = pd.DataFrame(np.column_stack([f, ci95]), 
-                     index=idx, columns=['forecast', 'lower_ci_95', 'upper_ci_95'])
+                     index=forecast_idx, columns=['forecast', 'lower_ci_95', 'upper_ci_95'])
 fc_99 = pd.DataFrame(np.column_stack([ci99]), 
-                     index=idx, columns=['lower_ci_99', 'upper_ci_99'])
+                     index=forecast_idx, columns=['lower_ci_99', 'upper_ci_99'])
 fc_all = fc_95.combine_first(fc_99)
 fc_all.head()
 
 
-# In[271]:
+# In[13]:
 
 
-# Plot XXX hour forecast for crypto returns
-plt.style.use('bmh')
-fig = plt.figure(figsize=(9, 7))
-ax = plt.gca()
+# Plot forecast for crypto returns
+fig, ax = plt.subplots(figsize=(9, 7))
 styles = ['b-', '0.2', '0.75', '0.2', '0.75']
 
 fc_all.plot(style=styles, ax=ax)
+
 plt.fill_between(fc_all.lower_ci_95, fc_all.upper_ci_95, color='gray', alpha=0.7)
 plt.fill_between(fc_all.lower_ci_99, fc_all.upper_ci_99, color='gray', alpha=0.2)
-plt.title('{} Hour {} Return Forecast\nARIMA {}'.format(forecast_steps, arima_order, SYM))
+
+plt.title('{} Hour {} Returns Forecast\nARIMA {}'.format(forecast_steps, SYM, arima_order))
 plt.legend(loc='best', fontsize=10)
 plt.show()
 
 
 # # GARCH based on ARIMA
 
-# In[204]:
+# In[14]:
 
 
-# Now we can fit the arch model using the best fit arima model parameters
-
-p_ = arima_order[0]
-o_ = arima_order[1]
-q_ = arima_order[2]
+# fit the arch model using the best fit arima model parameters
+p_, o_, q_ = arima_order
 
 # Using student T distribution usually provides better fit
 arch_mdl = arch.arch_model(arima_mdl.resid, p=p_, o=o_, q=q_, vol='GARCH', dist='StudentsT')
 arch_res = arch_mdl.fit(update_freq=5, disp='off')
-p(arch_res.summary())
+arch_res.summary()
 
 
-# In[205]:
+# In[15]:
 
 
-idx = pd.date_range(Y.index[-1], periods=forecast_steps, freq=freq)
+# Create a 21 hour forecast of crypto returns 
+arch_f = arch_res.forecast(horizon=forecast_steps, start=Y.index[-1], method='simulation', simulations=1000) 
 
 
-# In[206]:
+# In[16]:
 
 
-# Create a 21 hour forecast of BTC returns
-arch_f = arch_res.forecast(horizon=forecast_steps, start=Y.index[-1], method='simulation', simulations=1000) # 95% CI
+arch_f_sims = arch_f.simulations
 
+p('Percentile of simulation values = {:.6}'.format(np.percentile(arch_f_sims.values[-1, :, -1].T, 5)))
 
-# In[207]:
+fig, ax = plt.subplots(2, sharex=False, figsize=(8, 5))
 
+plt.sca(ax[0])
+plt.plot(forecast_idx, arch_f_sims.values[-1, :, :].T, color='blue', alpha=0.1)
+plt.title('Simulated paths')
 
-
-sims = arch_f.simulations
-fig, ax = plt.subplots()
-lines = plt.plot(idx, sims.values[-1, :, :].T, color='blue', alpha=0.1)
-lines[0].set_label('Simulated paths')
-fig.autofmt_xdate()
-plt.show()
-
-p(np.percentile(sims.values[-1, :, -1].T, 5))
-plt.hist(sims.values[-1, :, -1], bins=50)
+plt.sca(ax[1])
+plt.hist(arch_f_sims.values[-1, :, -1], bins=50)
 plt.title('Distribution of Returns')
-plt.show()
+
+plt.tight_layout()
 
 
-# In[208]:
+# In[17]:
 
 
 fig = arch_res.hedgehog_plot(horizon=forecast_steps)
+fig.autofmt_xdate()
 
 
-# In[209]:
+# In[18]:
 
 
-arch_res.plot(annualize='D', scale=365)
+fig = arch_res.plot(annualize=freq, scale=365)
+fig.autofmt_xdate()
 
 
 # # From Medium
 # https://medium.com/auquan/time-series-analysis-for-finance-arch-garch-models-822f87f1d755
 
-# In[210]:
+# In[19]:
 
 
-tsplot(arch_res.resid**2, lags=30)
+tsplot(arch_res.resid**2, lags=max_lag)
 
 
-# In[259]:
+# In[20]:
 
 
 Y_ = Y.iloc[-1000:]
-window = 300
-foreLength = len(Y_) - window
+window = 72
+foreLength = forecast_steps + window
 signal = Y_[-foreLength:]
 signal.head()
 
 
-# In[260]:
+# In[21]:
 
 
-def backtest(Y, foreLength, window, signal, order=''):
+def backtest(Y, foreLength, window, signal, frequency, order=None):
     for d in range(foreLength):
-
-        # create a rolling window by selecting 
-        # values between d+1 and d+T of S&P500 returns
-
-        TS = Y[(1+d):(window+d)] 
+        TS = Y[(d + 1):(d + window)] 
         
         if order:
-            best_order=order
-            best_mdl=smt.ARIMA(TS, order=(best_order[0], best_order[1], best_order[2]), freq=freq).fit(
-                        method='mle', trend='nc'
-                    )
+            best_mdl = smt.ARIMA(TS, order=order, freq=frequency).fit(method='mle', trend='nc')
         else:
-            # Find the best ARIMA fit 
-            # set d = 0 since we've already taken log return of the series
-            _, best_order, best_mdl = _get_best_arima(TS)
+            _, order, best_mdl = _get_best_arima(TS)
         
-        
-        #now that we have our ARIMA fit, we feed this to GARCH model
-        p_ = best_order[0]
-        o_ = best_order[1]
-        q_ = best_order[2]
-        
+        p_, o_, q_ = order
         if p_ == o_ == 0:
             p_ = 1
         
-        am = arch.arch_model(best_mdl.resid, p=p_, o=o_, q=q_, dist='StudentsT')
-        res = am.fit(update_freq=5, disp='off')
-
-        # Generate a forecast of next day return using our fitted model
-        out = res.forecast(horizon=1, start=None, align='origin')
-
-        #Set trading signal equal to the sign of forecasted return
-        # Buy if we expect positive returns, sell if negative
-
-        signal.iloc[d] = np.sign(out.mean['h.1'].iloc[-1])
+        arch_mdl = arch.arch_model(best_mdl.resid, p=p_, o=o_, q=q_, dist='StudentsT')
+        res = arch_mdl.fit(update_freq=5, disp='off')
+        forecast = res.forecast(horizon=1, start=None, align='origin')
+        # Set trading signal equal to the sign of forecasted return
+        signal.iloc[d] = np.sign(forecast.mean['h.1'].iloc[-1])
     return signal
 
 
-# In[261]:
+# In[22]:
 
 
-signal = backtest(Y_, foreLength, window, signal)
+signal = backtest(Y_, foreLength, window, signal, freq)
 
 
-# In[262]:
+# In[23]:
 
 
-returns = pd.DataFrame(index=signal.index, 
-                       columns=['Buy and Hold', 'Strategy'])
+returns = pd.DataFrame(index=signal.index, columns=['Buy and Hold', 'Strategy'])
 returns['Buy and Hold'] = Y_.iloc[-foreLength:]
-returns['Strategy'] = signal*returns['Buy and Hold']
+returns['Strategy'] = signal * returns['Buy and Hold']
 
-eqCurves = pd.DataFrame(index=signal.index, 
-                        columns=['Buy and Hold', 'Strategy'])
+eqCurves = pd.DataFrame(index=signal.index, columns=['Buy and Hold', 'Strategy'])
 eqCurves['Buy and Hold'] = returns['Buy and Hold'].cumsum() + 1
 eqCurves['Strategy'] = returns['Strategy'].cumsum() + 1
 
-eqCurves['Strategy'].plot(figsize=(10, 8))
+fig, ax = plt.subplots(figsize=(10, 8))
+eqCurves['Strategy'].plot()
 eqCurves['Buy and Hold'].plot()
 plt.legend()
 plt.show()
@@ -366,63 +350,49 @@ plt.show()
 
 # # From Arch website
 
-# In[273]:
+# In[24]:
 
 
-from arch.univariate import ARX
-ar = ARX(Y, lags=30)
-print(ar.fit().summary())
+ar = ARX(Y, lags=max_lag)
+ar.fit().summary()
 
 
-# In[270]:
+# In[25]:
 
 
-from arch.univariate import ARCH, GARCH
 ar.volatility = GARCH(p=3, o=0, q=3)
 res = ar.fit(update_freq=0, disp='off')
-p(res.summary())
+res.summary()
 
 
-# In[265]:
+# In[26]:
 
 
-from arch.univariate import StudentsT
 ar.distribution = StudentsT()
 res = ar.fit(update_freq=0, disp='off')
-p(res.summary())
+res.summary()
 
 
-# In[266]:
+# In[27]:
 
 
-arf = ar.forecast(horizon=forecast_steps, start=Y.index[-1], 
-                  params=res.params, method='simulation')
+ar_forecast = ar.forecast(horizon=forecast_steps, start=Y.index[-1], params=res.params, method='simulation')
 
 
-# In[267]:
+# In[28]:
 
 
-plt.plot(idx, arf.simulations.values[-1].T, 
-         color='blue', alpha=0.1)
+ar_forecast_simulations = ar_forecast.simulations.values[-1].T
+plt.plot(forecast_idx, ar_forecast_simulations, color='blue', alpha=0.1)
 plt.show()
 
 
-# In[269]:
+# In[29]:
 
 
-plt.style.use('bmh')
-fig, ax = plt.subplots()
-plt.plot(idx, arf.simulations.variances[-1,::].T, 
-         color='blue', alpha=0.1, label='simulated var')
-plt.plot(idx, arf.variance.iloc[-1], 
-         color='red', label='expected var')
+fig, ax = plt.subplots(figsize=(10, 8))
+plt.plot(forecast_idx, ar_forecast.simulations.variances[-1,::].T, color='blue', alpha=0.1, label='simulated var')
+plt.plot(forecast_idx, ar_forecast.variance.iloc[-1], color='red', label='expected var')
 fig.autofmt_xdate()
 plt.show()
-
-
-# In[225]:
-
-
-# arp = ar.simulate(params=res.params, nobs=res.nobs)
-# arp[['data', 'errors']].plot(alpha=0.3)
 
