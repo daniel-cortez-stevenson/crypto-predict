@@ -1,4 +1,5 @@
 # development environment packages
+arch>=4.8.1
 bumpversion>=0.5.
 coverage>=4.5.2
 coveralls>=1.5.1
@@ -11,5 +12,6 @@ jupyter>=1.0.
 jupyter_contrib_nbextensions>=0.5.
 nbconvert>=5.4.
 seaborn>=0.9.0
+statsmodels>=0.9
 tensorboard>=1.12.0
 xgboost>=0.7.2

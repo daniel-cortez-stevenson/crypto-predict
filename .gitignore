@@ -82,7 +82,7 @@ target/
 .DS_Store
 
 # Tensorboard log
-notebooks/logs/
+logs/
 
 # Pytest
 .pytest_cache

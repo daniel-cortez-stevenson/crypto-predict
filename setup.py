@@ -36,6 +36,7 @@ setup(
         'pytest>=4.0.2',
         'coverage>=4.5.2',
         'nbval>=0.9',
+        'pytest-xdist>=1.28',
     ],
     entry_points = {
         'console_scripts': [

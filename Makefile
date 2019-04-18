@@ -37,16 +37,16 @@ run_jupyter:
 test_all: clean_test test test_notebooks
 
 test: clean_test
-	coverage run setup.py test
+	bash -c "coverage run setup.py test"
 
 test_notebooks: clean_test
-	$(PYTHON_INTERPRETER) -m pytest --nbval-lax ./notebooks
+	$(PYTHON_INTERPRETER) -m pytest --nbval-lax -n auto --max-worker-restart 1 --dist loadscope ./notebooks
 
 run_docker: clean
 	docker build -f ./docker/Dockerfile -t crypr-api .
 	docker run -p 5000:5000 crypr-api
 
-clean: clean_pyc clean_test clean_build
+clean: clean_pyc clean_test clean_build clean_logs
 
 clean_build:
 	rm -fr build/
@@ -55,20 +55,23 @@ clean_build:
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -f {} +
 
+clean_logs:
+	find . -name 'logs' -exec rm -fr {} +
+
 clean_pyc:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
 
-clean_test:
+clean_test: clean_build
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr .pytest_cache
 
 lint:
-	$(PYTHON_INTERPRETER) -m flake8 --max-line-length 89 ./crypr
-	$(PYTHON_INTERPRETER) -m flake8 --max-line-length 89 ./scripts
+	$(PYTHON_INTERPRETER) -m flake8 --exit-zero ./crypr
+	$(PYTHON_INTERPRETER) -m flake8 --exit-zero ./notebooks
 
 dist: clean
 	$(PYTHON_INTERPRETER) setup.py sdist
