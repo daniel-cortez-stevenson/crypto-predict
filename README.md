@@ -1,3 +1,5 @@
+**Archived.** This was an early experiment in cryptocurrency price forecasting using a CNN/LSTM pipeline. I no longer consider that modeling approach appropriate for this problem and do not recommend using this repository for forecasting, trading, or investment decisions. The code remains available as a record of earlier work.
+
 crypto-predict
 ==============================
 [![Build Status](https://travis-ci.com/daniel-cortez-stevenson/crypto-predict.svg?branch=master)](https://travis-ci.com/daniel-cortez-stevenson/crypto-predict)
