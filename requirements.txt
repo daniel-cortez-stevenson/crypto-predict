@@ -15,3 +15,4 @@ seaborn>=0.9.0
 statsmodels>=0.9
 tensorboard>=1.12.0
 xgboost>=0.7.2
+tornado>=6.3.2 # not directly required, pinned by Snyk to avoid a vulnerability
